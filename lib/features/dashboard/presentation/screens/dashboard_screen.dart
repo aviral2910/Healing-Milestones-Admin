@@ -8,6 +8,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../users/data/users_repository.dart';
 import '../../../stories/data/stories_repository.dart';
 import '../../../moderation/data/moderation_repository.dart';
+import '../../../support_chats/data/support_chats_repository.dart';
 
 final dashboardStatsProvider = StreamProvider.autoDispose<Map<String, int>>((ref) async* {
   final usersStream = ref.watch(usersRepositoryProvider).getUsers();
@@ -21,12 +22,17 @@ final dashboardStatsProvider = StreamProvider.autoDispose<Map<String, int>>((ref
     
     final storiesResult = await ref.read(storiesRepositoryProvider).getPendingStories().first;
     final reportsResult = await ref.read(moderationRepositoryProvider).getPendingReports().first;
+    final chatsResult = await ref.read(supportChatsRepositoryProvider).getSupportChatsStream().first;
+    
+    final unreadSupportChats = chatsResult.where((c) => (c.unreadCount['admin'] ?? 0) > 0).length;
 
     yield {
       'totalUsers': users.length,
       'pendingProfiles': pendingProfiles,
       'pendingStories': storiesResult.length,
       'activeReports': reportsResult.length,
+      'activeSupportChats': chatsResult.length,
+      'unreadSupportChats': unreadSupportChats,
     };
   }
 });
@@ -101,6 +107,17 @@ class DashboardScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 16),
                 
+                // Support Hub
+                _DashboardCard(
+                  title: 'Support Hub',
+                  subtitle: '${stats['activeSupportChats']} Active Chats',
+                  icon: Icons.support_agent,
+                  color: Colors.blueAccent,
+                  hasUnread: (stats['unreadSupportChats'] ?? 0) > 0,
+                  onTap: () => context.push(AppRoutes.supportChats),
+                ),
+                const SizedBox(height: 16),
+                
                 // Moderation Hub
                 _DashboardCard(
                   title: 'Content Moderation',
@@ -125,6 +142,7 @@ class _DashboardCard extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
   final bool isGlowing;
+  final bool hasUnread;
 
   const _DashboardCard({
     required this.title,
@@ -133,6 +151,7 @@ class _DashboardCard extends StatelessWidget {
     required this.color,
     required this.onTap,
     this.isGlowing = false,
+    this.hasUnread = false,
   });
 
   @override
@@ -180,27 +199,48 @@ class _DashboardCard extends StatelessWidget {
                 ),
                 const SizedBox(width: 24),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  child: Row(
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              subtitle,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
+                      if (hasUnread) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: const BoxDecoration(
+                            color: Colors.redAccent,
+                            shape: BoxShape.circle,
+                          ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 ),

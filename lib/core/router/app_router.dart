@@ -14,6 +14,8 @@ import '../../features/verification/presentation/screens/verification_screen.dar
 import '../../features/moderation/presentation/screens/moderation_screen.dart';
 import '../../features/settings/presentation/screens/settings_screen.dart';
 import '../../features/settings/presentation/screens/manage_admin_access_screen.dart';
+import '../../features/support_chats/presentation/screens/support_chats_list_screen.dart';
+import '../../features/support_chats/presentation/screens/support_chat_detail_screen.dart';
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -95,6 +97,17 @@ final routerProvider = Provider<GoRouter>((ref) {
           final id = state.pathParameters['id']!;
           final mode = state.uri.queryParameters['mode'] ?? 'manage';
           return StoryDetailScreen(storyId: id, mode: mode);
+        },
+      ),
+      GoRoute(
+        path: AppRoutes.supportChats,
+        builder: (context, state) => const SupportChatsListScreen(),
+      ),
+      GoRoute(
+        path: '/support-chat/:id',
+        builder: (context, state) {
+          final id = state.pathParameters['id']!;
+          return SupportChatDetailScreen(chatId: id);
         },
       ),
     ],
