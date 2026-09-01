@@ -22,9 +22,9 @@ class MessageModel {
       id: id,
       text: map['text'] ?? '',
       senderId: map['senderId'] ?? '',
-      timestamp: (map['timestamp'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      timestamp: (map['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
       messageType: map['messageType'] ?? 'text',
-      fileUrl: map['fileUrl'],
+      fileUrl: map['imageUrl'],
     );
   }
 
@@ -32,9 +32,9 @@ class MessageModel {
     return {
       'text': text,
       'senderId': senderId,
-      'timestamp': Timestamp.fromDate(timestamp),
+      'createdAt': Timestamp.fromDate(timestamp),
       'messageType': messageType,
-      'fileUrl': fileUrl,
+      'imageUrl': fileUrl,
     };
   }
 

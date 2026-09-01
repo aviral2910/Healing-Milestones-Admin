@@ -10,8 +10,8 @@ import '../../../users/data/users_repository.dart';
 import '../providers/support_chats_providers.dart';
 
 // Provider to fetch a user stream for the chat list item
-final chatUserProvider = StreamProvider.autoDispose.family<dynamic, String>((ref, userId) {
-  return ref.watch(usersRepositoryProvider).getUserStream(userId);
+final chatUserProvider = FutureProvider.autoDispose.family<dynamic, String>((ref, userId) {
+  return ref.watch(usersRepositoryProvider).getUser(userId);
 });
 
 class SupportChatsListScreen extends ConsumerWidget {

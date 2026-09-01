@@ -15,10 +15,10 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   final moderationRepo = ref.watch(moderationRepositoryProvider);
   final supportChatsRepo = ref.watch(supportChatsRepositoryProvider);
 
-  final users = await usersRepo.getUsers();
+  final totalUsersCount = await usersRepo.getTotalUsersCount();
   
   // Pending User Verifications
-  final pendingProfiles = users.where((u) => u.appliedForVerification && !u.isVerified).length;
+  final pendingProfiles = (await usersRepo.getUsers()).where((u) => u.appliedForVerification && !u.isVerified).length;
   
   // Pending Story Verifications
   final storiesResult = await storiesRepo.getPendingStories();
@@ -34,7 +34,7 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   }
   
   return {
-    'totalUsers': users.length,
+    'totalUsers': totalUsersCount,
     'pendingProfiles': pendingProfiles,
     'pendingStories': storiesResult.length,
     'activeReports': reportsResult.length,

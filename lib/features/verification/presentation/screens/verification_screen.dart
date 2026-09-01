@@ -9,13 +9,12 @@ import '../../../stories/data/stories_repository.dart';
 import '../../../../core/models/user_model.dart';
 import '../../../../core/models/story_model.dart';
 
-final pendingProfilesProvider = StreamProvider<List<UserModel>>((ref) {
-  return ref.watch(usersRepositoryProvider).getUsers().map(
-        (users) => users.where((u) => u.appliedForVerification && !u.isVerified).toList(),
-      );
+final pendingProfilesProvider = FutureProvider<List<UserModel>>((ref) async {
+  final users = await ref.watch(usersRepositoryProvider).getUsers();
+  return users.where((u) => u.appliedForVerification && !u.isVerified).toList();
 });
 
-final pendingStoriesProvider = StreamProvider<List<StoryModel>>((ref) {
+final pendingStoriesProvider = FutureProvider<List<StoryModel>>((ref) {
   return ref.watch(storiesRepositoryProvider).getPendingStories();
 });
 

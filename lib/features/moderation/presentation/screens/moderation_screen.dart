@@ -10,7 +10,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_palette.dart';
 
-final pendingReportsProvider = StreamProvider<List<ReportModel>>((ref) {
+final pendingReportsProvider = FutureProvider<List<ReportModel>>((ref) {
   return ref.watch(moderationRepositoryProvider).getPendingReports();
 });
 
@@ -24,9 +24,8 @@ final storyFutureProvider = FutureProvider.family<StoryModel?, String>((
 final userFutureProvider = FutureProvider.family<UserModel?, String>((
   ref,
   userId,
-) async {
-  final stream = ref.watch(usersRepositoryProvider).getUserStream(userId);
-  return await stream.first;
+) {
+  return ref.watch(usersRepositoryProvider).getUser(userId);
 });
 
 class ModerationScreen extends ConsumerWidget {

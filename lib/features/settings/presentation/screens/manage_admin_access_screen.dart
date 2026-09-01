@@ -7,7 +7,7 @@ import '../../../../core/router/app_routes.dart';
 import '../../../users/data/users_repository.dart';
 import '../../../../core/models/user_model.dart';
 
-final adminRequestsProvider = StreamProvider<List<UserModel>>((ref) {
+final adminRequestsProvider = FutureProvider<List<UserModel>>((ref) {
   return ref.watch(usersRepositoryProvider).getAdminRequests();
 });
 

@@ -1,61 +1,60 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/models/story_model.dart';
+import '../../../core/network/api_client.dart';
 
 final storiesRepositoryProvider = Provider<StoriesRepository>((ref) {
-  return StoriesRepository(FirebaseFirestore.instance);
+  return StoriesRepository(ref.read(apiClientProvider).dio);
 });
 
 class StoriesRepository {
-  final FirebaseFirestore _firestore;
+  final Dio _dio;
 
-  StoriesRepository(this._firestore);
+  StoriesRepository(this._dio);
 
-  Stream<List<StoryModel>> getPendingStories() {
-    return _firestore
-        .collection('stories')
-        .where('verificationStatus', isEqualTo: 'pending')
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => StoryModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+  Future<List<StoryModel>> getPendingStories() async {
+    final response = await _dio.get('/api/admin/stories', queryParameters: {'verification_status': 'pending'});
+    final items = response.data['items'] as List;
+    return items.map((e) {
+      if (e['id'] != null) e['storyId'] = e['id'];
+      if (e['userId'] != null) e['authorId'] = e['userId'];
+      return StoryModel.fromMap(e as Map<String, dynamic>, e['storyId'] ?? '');
+    }).toList();
   }
 
-  Stream<StoryModel?> getStoryStream(String storyId) {
-    return _firestore.collection('stories').doc(storyId).snapshots().map((doc) {
-      if (!doc.exists || doc.data() == null) return null;
-      return StoryModel.fromMap(doc.data()!, doc.id);
-    });
+  Future<StoryModel?> getStory(String storyId) async {
+    try {
+      final response = await _dio.get('/api/stories/$storyId');
+      final data = response.data as Map<String, dynamic>;
+      if (data['id'] != null) data['storyId'] = data['id'];
+      if (data['userId'] != null) data['authorId'] = data['userId'];
+      return StoryModel.fromMap(data, data['storyId'] ?? storyId);
+    } catch (e) {
+      return null;
+    }
   }
 
-  Stream<List<StoryModel>> getStoriesByAuthor(String authorId) {
-    return _firestore
-        .collection('stories')
-        .where('authorId', isEqualTo: authorId)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs
-          .map((doc) => StoryModel.fromMap(doc.data(), doc.id))
-          .toList();
-    });
+  Future<List<StoryModel>> getStoriesByAuthor(String authorId) async {
+    final response = await _dio.get('/api/users/$authorId/stories');
+    final items = response.data['items'] as List;
+    return items.map((e) {
+      if (e['id'] != null) e['storyId'] = e['id'];
+      if (e['userId'] != null) e['authorId'] = e['userId'];
+      return StoryModel.fromMap(e as Map<String, dynamic>, e['storyId'] ?? '');
+    }).toList();
   }
 
   Future<void> updateStoryVerification(String storyId, String status, String adminId) async {
-    await _firestore.collection('stories').doc(storyId).update({
-      'verificationStatus': status,
-      'isVerifiedStory': status == 'verified',
-      if (status == 'verified') 'verifiedAt': FieldValue.serverTimestamp(),
-      'verifierId': adminId,
-    });
+    if (status == 'verified') {
+      await _dio.post('/api/admin/stories/$storyId/verify');
+    }
   }
 
   Future<void> hideStory(String storyId) async {
-    await _firestore.collection('stories').doc(storyId).update({'isHidden': true});
+    await _dio.delete('/api/admin/stories/$storyId');
   }
 
   Future<void> deleteStory(String storyId) async {
-    await _firestore.collection('stories').doc(storyId).delete();
+    await _dio.delete('/api/admin/stories/$storyId');
   }
 }

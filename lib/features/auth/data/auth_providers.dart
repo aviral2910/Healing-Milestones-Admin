@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../core/network/api_client.dart';
 
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
   return FirebaseAuth.instance;
@@ -13,6 +14,12 @@ final adminClaimProvider = FutureProvider<bool>((ref) async {
   final user = ref.watch(authStateProvider).value;
   if (user == null) return false;
   
-  final idTokenResult = await user.getIdTokenResult(true);
-  return idTokenResult.claims?['admin'] == true;
+  try {
+    final dio = ref.read(apiClientProvider).dio;
+    final response = await dio.get('/api/admin/auth/me');
+    return response.statusCode == 200;
+  } catch (e) {
+    print('Admin verification failed: $e');
+    return false;
+  }
 });

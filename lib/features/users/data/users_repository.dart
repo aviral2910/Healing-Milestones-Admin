@@ -1,61 +1,65 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/models/user_model.dart';
+import '../../../core/network/api_client.dart';
 
 final usersRepositoryProvider = Provider<UsersRepository>((ref) {
-  return UsersRepository(FirebaseFirestore.instance);
+  return UsersRepository(ref.read(apiClientProvider).dio);
 });
 
 class UsersRepository {
-  final FirebaseFirestore _firestore;
+  final Dio _dio;
 
-  UsersRepository(this._firestore);
+  UsersRepository(this._dio);
 
-  Stream<List<UserModel>> getUsers() {
-    return _firestore.collection('users').snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-    });
+  Future<int> getTotalUsersCount() async {
+    final response = await _dio.get('/api/admin/users', queryParameters: {'limit': 1});
+    return response.data['total'] as int;
   }
 
-  Stream<UserModel?> getUserStream(String userId) {
-    return _firestore.collection('users').doc(userId).snapshots().map((doc) {
-      if (!doc.exists || doc.data() == null) return null;
-      return UserModel.fromMap(doc.data()!);
-    });
+  Future<List<UserModel>> getUsers() async {
+    final response = await _dio.get('/api/admin/users');
+    final items = response.data['items'] as List;
+    return items.map((e) {
+      if (e['id'] != null) e['userId'] = e['id']; // map fastAPI id to userId
+      return UserModel.fromMap(e as Map<String, dynamic>);
+    }).toList();
+  }
+
+  Future<UserModel?> getUser(String userId) async {
+    final response = await _dio.get('/api/users/$userId');
+    final data = response.data as Map<String, dynamic>;
+    if (data['id'] != null) data['userId'] = data['id'];
+    return UserModel.fromMap(data);
   }
 
   Future<void> updateUserStatus(String userId, String newStatus) async {
-    await _firestore.collection('users').doc(userId).update({'status': newStatus});
+    await _dio.patch('/api/admin/users/$userId/status', data: {'status': newStatus});
   }
 
   Future<void> updateUserRole(String userId, String newRole) async {
-    await _firestore.collection('users').doc(userId).update({'role': newRole});
+    // Note: The FastAPI backend currently handles role updates during verification 
+    // or via a generic patch. We'll send it to a generic user update.
+    await _dio.patch('/api/users/$userId', data: {'role': newRole});
   }
 
   Future<void> updateUserVerification(String userId, bool isVerified) async {
-    await _firestore.collection('users').doc(userId).update({
-      'isVerified': isVerified,
-      'appliedForVerification': false,
-    });
+    await _dio.patch('/api/admin/users/$userId/verify', data: {'approve': isVerified});
   }
 
-  Stream<List<UserModel>> getAdminRequests() {
-    return _firestore
-        .collection('users')
-        .where('appliedForAdmin', isEqualTo: true)
-        .snapshots()
-        .map((snapshot) {
-      return snapshot.docs.map((doc) => UserModel.fromMap(doc.data())).toList();
-    });
+  Future<List<UserModel>> getAdminRequests() async {
+    final response = await _dio.get('/api/admin/verifications');
+    final items = response.data['items'] as List;
+    return items.map((e) {
+      if (e['id'] != null) e['userId'] = e['id'];
+      return UserModel.fromMap(e as Map<String, dynamic>);
+    }).toList();
   }
 
   Future<void> updateUserAdminAccess(String userId, bool approve) async {
-    final updates = <String, dynamic>{
-      'appliedForAdmin': false,
-    };
-    if (approve) {
-      updates['role'] = 'admin';
-    }
-    await _firestore.collection('users').doc(userId).update(updates);
+    // Fast api verification handles professional verification, 
+    // for admin access we can use the same or a dedicated endpoint.
+    // For now we map this to the verify endpoint.
+    await _dio.patch('/api/admin/users/$userId/verify', data: {'approve': approve});
   }
 }

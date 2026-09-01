@@ -24,8 +24,8 @@ class ChatModel {
       id: id,
       participants: List<String>.from(map['participants'] ?? []),
       type: map['type'] ?? 'support',
-      lastMessage: map['lastMessage'] ?? '',
-      lastUpdated: (map['lastUpdated'] as Timestamp?)?.toDate() ?? DateTime.now(),
+      lastMessage: map['lastMessageText'] ?? '',
+      lastUpdated: (map['lastMessageTime'] as Timestamp?)?.toDate() ?? DateTime.now(),
       unreadCount: Map<String, int>.from(map['unreadCount'] ?? {}),
       typingStatus: Map<String, bool>.from(map['typingStatus'] ?? {}),
     );
@@ -35,8 +35,8 @@ class ChatModel {
     return {
       'participants': participants,
       'type': type,
-      'lastMessage': lastMessage,
-      'lastUpdated': Timestamp.fromDate(lastUpdated),
+      'lastMessageText': lastMessage,
+      'lastMessageTime': Timestamp.fromDate(lastUpdated),
       'unreadCount': unreadCount,
       'typingStatus': typingStatus,
     };

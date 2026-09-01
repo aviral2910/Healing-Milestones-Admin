@@ -15,7 +15,7 @@ class SupportChatsRepository {
 
   Stream<List<ChatModel>> getSupportChatsStream() {
     return _firestore
-        .collection('chats')
+        .collection('chat_rooms')
         .where('participants', arrayContains: 'admin')
         .snapshots()
         .map((snapshot) {
@@ -32,7 +32,7 @@ class SupportChatsRepository {
   }
 
   Stream<ChatModel?> getChatStream(String chatId) {
-    return _firestore.collection('chats').doc(chatId).snapshots().map((doc) {
+    return _firestore.collection('chat_rooms').doc(chatId).snapshots().map((doc) {
       if (doc.exists && doc.data() != null) {
         return ChatModel.fromMap(doc.data()!, doc.id);
       }
@@ -42,10 +42,10 @@ class SupportChatsRepository {
 
   Stream<List<MessageModel>> getMessagesStream(String chatId) {
     return _firestore
-        .collection('chats')
+        .collection('chat_rooms')
         .doc(chatId)
         .collection('messages')
-        .orderBy('timestamp', descending: true)
+        .orderBy('createdAt', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs
@@ -58,12 +58,12 @@ class SupportChatsRepository {
     final batch = _firestore.batch();
     
     final messageRef = _firestore
-        .collection('chats')
+        .collection('chat_rooms')
         .doc(chatId)
         .collection('messages')
         .doc(message.id);
         
-    final chatRef = _firestore.collection('chats').doc(chatId);
+    final chatRef = _firestore.collection('chat_rooms').doc(chatId);
 
     batch.set(messageRef, message.toMap());
     
@@ -73,8 +73,8 @@ class SupportChatsRepository {
     }
 
     final updates = <String, dynamic>{
-      'lastMessage': lastMessageText,
-      'lastUpdated': FieldValue.serverTimestamp(),
+      'lastMessageText': lastMessageText,
+      'lastMessageTime': FieldValue.serverTimestamp(),
     };
 
     if (recipientId != null) {
@@ -87,13 +87,13 @@ class SupportChatsRepository {
   }
 
   Future<void> clearUnreadCount(String chatId, String userId) async {
-    await _firestore.collection('chats').doc(chatId).update({
+    await _firestore.collection('chat_rooms').doc(chatId).update({
       'unreadCount.$userId': 0,
     });
   }
 
   Future<void> updateTypingStatus(String chatId, String userId, bool isTyping) async {
-    await _firestore.collection('chats').doc(chatId).update({
+    await _firestore.collection('chat_rooms').doc(chatId).update({
       'typingStatus.$userId': isTyping,
     });
   }

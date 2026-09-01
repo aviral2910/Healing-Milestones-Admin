@@ -12,12 +12,12 @@ import '../../../../core/theme/theme_palette.dart';
 import '../../../../core/presentation/widgets/admin_confirmation_dialog.dart';
 
 // Provider to fetch a single user
-final singleUserProvider = StreamProvider.family<UserModel?, String>((ref, userId) {
-  return ref.watch(usersRepositoryProvider).getUserStream(userId);
+final singleUserProvider = FutureProvider.family<UserModel?, String>((ref, userId) {
+  return ref.watch(usersRepositoryProvider).getUser(userId);
 });
 
 // Provider to fetch stories for a user
-final userStoriesProvider = StreamProvider.family<List<StoryModel>, String>((ref, userId) {
+final userStoriesProvider = FutureProvider.family<List<StoryModel>, String>((ref, userId) {
   return ref.watch(storiesRepositoryProvider).getStoriesByAuthor(userId);
 });
 

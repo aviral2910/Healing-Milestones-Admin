@@ -7,7 +7,7 @@ import '../../../../core/theme/theme_palette.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
 
-final usersProvider = StreamProvider<List<UserModel>>((ref) {
+final usersProvider = FutureProvider<List<UserModel>>((ref) {
   return ref.watch(usersRepositoryProvider).getUsers();
 });
 

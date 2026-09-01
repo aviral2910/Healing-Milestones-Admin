@@ -8,8 +8,8 @@ import '../../../../core/presentation/widgets/admin_confirmation_dialog.dart';
 import '../../../../core/models/story_model.dart';
 
 // Provider to fetch a single story
-final singleStoryProvider = StreamProvider.family<StoryModel?, String>((ref, storyId) {
-  return ref.watch(storiesRepositoryProvider).getStoryStream(storyId);
+final singleStoryProvider = FutureProvider.family<StoryModel?, String>((ref, storyId) {
+  return ref.watch(storiesRepositoryProvider).getStory(storyId);
 });
 
 class StoryDetailScreen extends ConsumerWidget {
