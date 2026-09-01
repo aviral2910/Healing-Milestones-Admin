@@ -67,49 +67,17 @@ class DashboardScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Overview',
+                    'Management Hubs',
                     style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // Summary Cards
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    children: [
-                      _SummaryCard(
-                        title: 'Total Users',
-                        value: '${stats['totalUsers']}',
-                        icon: Icons.people,
-                        color: Colors.blue,
-                      ),
-                      _SummaryCard(
-                        title: 'Pending Verifications',
-                        value: '${stats['pendingProfiles']! + stats['pendingStories']!}',
-                        icon: Icons.verified,
-                        color: Colors.orange,
-                      ),
-                      _SummaryCard(
-                        title: 'Active Reports',
-                        value: '${stats['activeReports']}',
-                        icon: Icons.gavel,
-                        color: Colors.red,
-                      ),
-                      _SummaryCard(
-                        title: 'Active Chats',
-                        value: '${stats['activeSupportChats']}',
-                        icon: Icons.support_agent,
-                        color: Colors.green,
-                      ),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 8),
                   Text(
-                    'Management Hubs',
-                    style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    'Select a tool below to begin managing the platform.',
+                    style: theme.textTheme.bodyLarge?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
                   
                   // Action Cards
                   LayoutBuilder(
@@ -124,27 +92,27 @@ class DashboardScreen extends ConsumerWidget {
                         children: [
                           _ActionCard(
                             title: 'Users',
-                            subtitle: 'Manage platform users and roles',
+                            subtitle: '${stats['totalUsers']} Total Users\nManage platform users and roles',
                             icon: Icons.manage_accounts,
                             onTap: () => context.push(AppRoutes.users),
                           ),
                           _ActionCard(
                             title: 'Verification',
-                            subtitle: 'Review pending profiles & stories',
+                            subtitle: '${stats['pendingProfiles']} Profiles, ${stats['pendingStories']} Stories Pending\nReview pending profiles & stories',
                             icon: Icons.verified_user,
                             onTap: () => context.push(AppRoutes.verification),
                             badgeCount: stats['pendingProfiles']! + stats['pendingStories']!,
                           ),
                           _ActionCard(
                             title: 'Support',
-                            subtitle: 'Respond to user inquiries',
+                            subtitle: '${stats['activeSupportChats']} Active Chats\nRespond to user inquiries',
                             icon: Icons.headset_mic,
                             onTap: () => context.push(AppRoutes.supportChats),
                             badgeCount: stats['unreadSupportChats'],
                           ),
                           _ActionCard(
                             title: 'Moderation',
-                            subtitle: 'Review reported content',
+                            subtitle: '${stats['activeReports']} Active Reports\nReview reported content',
                             icon: Icons.gavel,
                             onTap: () => context.push(AppRoutes.moderation),
                             badgeCount: stats['activeReports'],
@@ -159,62 +127,6 @@ class DashboardScreen extends ConsumerWidget {
             ),
           );
         },
-      ),
-    );
-  }
-}
-
-class _SummaryCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final IconData icon;
-  final MaterialColor color;
-
-  const _SummaryCard({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Container(
-      width: 200,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 16),
-          Text(
-            value,
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -242,8 +154,14 @@ class _ActionCard extends StatelessWidget {
     final theme = Theme.of(context);
     
     return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: theme.colorScheme.outline.withAlpha(20), 
+          width: 1
+        ),
+      ),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -252,12 +170,14 @@ class _ActionCard extends StatelessWidget {
           child: Row(
             children: [
               CircleAvatar(
-                radius: 28,
-                backgroundColor: isDestructive ? Colors.red.withAlpha(20) : theme.colorScheme.primaryContainer,
+                radius: 32,
+                backgroundColor: isDestructive 
+                    ? Colors.redAccent.withAlpha(30) 
+                    : theme.colorScheme.primaryContainer,
                 child: Icon(
                   icon,
-                  size: 28,
-                  color: isDestructive ? Colors.red : theme.colorScheme.primary,
+                  size: 32,
+                  color: isDestructive ? Colors.redAccent : theme.colorScheme.primary,
                 ),
               ),
               const SizedBox(width: 24),
@@ -268,30 +188,37 @@ class _ActionCard extends StatelessWidget {
                   children: [
                     Text(
                       title,
-                      style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                     ),
-                    const SizedBox(height: 4),
+                    const SizedBox(height: 6),
                     Text(
                       subtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
                     ),
                   ],
                 ),
               ),
               if (badgeCount != null && badgeCount! > 0)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: isDestructive ? Colors.red : theme.colorScheme.error,
-                    borderRadius: BorderRadius.circular(16),
+                    color: isDestructive ? Colors.redAccent : theme.colorScheme.error,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     '$badgeCount',
-                    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      color: Colors.white, 
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
                   ),
                 )
               else
-                Icon(Icons.arrow_forward_ios, color: theme.colorScheme.onSurfaceVariant, size: 16),
+                Icon(Icons.arrow_forward_ios, color: theme.colorScheme.onSurfaceVariant, size: 20),
             ],
           ),
         ),

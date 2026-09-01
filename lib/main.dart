@@ -29,15 +29,10 @@ class HealingMilestonesAdminApp extends ConsumerWidget {
     
     return MaterialApp.router(
       title: 'Healing Milestones Admin',
-      // We will use standard Material 3 Light Theme based on the golden light color
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color.fromARGB(255, 212, 154, 55),
-          brightness: Brightness.light,
-        ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeMode.light, 
+      // Switch back to the beautiful Golden Dark theme but keeping Material 3
+      theme: AppTheme.getThemeData(ThemePalette.goldenLight),
+      darkTheme: AppTheme.getThemeData(ThemePalette.goldenDark),
+      themeMode: ThemeMode.dark, 
       routerConfig: router,
       debugShowCheckedModeBanner: false,
     );
