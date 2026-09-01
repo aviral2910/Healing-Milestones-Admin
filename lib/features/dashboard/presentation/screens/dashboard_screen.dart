@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/router/app_routes.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_palette.dart';
 import '../../../users/data/users_repository.dart';
 import '../../../stories/data/stories_repository.dart';
 import '../../../moderation/data/moderation_repository.dart';
@@ -40,186 +42,242 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final theme = Theme.of(context);
+    final theme = AppTheme.getThemeData(ThemePalette.goldenDark);
     final statsAsync = ref.watch(dashboardStatsProvider);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Admin Dashboard'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            tooltip: 'Settings',
-            onPressed: () => context.push(AppRoutes.settings),
-          ),
-        ],
-      ),
+      backgroundColor: Colors.black, // True pitch black for premium feel
       body: statsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (err, stack) => Center(child: Text('Error: $err', style: TextStyle(color: theme.colorScheme.error))),
+        loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+        error: (err, stack) => Center(child: Text('Error: $err', style: const TextStyle(color: Colors.redAccent))),
         data: (stats) {
           return RefreshIndicator(
+            color: Colors.white,
+            backgroundColor: const Color(0xFF1C1C1E),
             onRefresh: () async => ref.refresh(dashboardStatsProvider),
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Management Hubs',
-                    style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Select a tool below to begin managing the platform.',
-                    style: theme.textTheme.bodyLarge?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+            child: CustomScrollView(
+              slivers: [
+                SliverAppBar(
+                  expandedHeight: 180,
+                  floating: false,
+                  pinned: true,
+                  backgroundColor: Colors.black,
+                  elevation: 0,
+                  actions: [
+                    IconButton(
+                      icon: const Icon(Icons.settings, color: Colors.white),
+                      onPressed: () => context.push(AppRoutes.settings),
+                    ),
+                    const SizedBox(width: 16),
+                  ],
+                  flexibleSpace: FlexibleSpaceBar(
+                    titlePadding: const EdgeInsets.only(left: 24, bottom: 20),
+                    title: const Text(
+                      'Command Center',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            theme.colorScheme.primary.withAlpha(40),
+                            Colors.black,
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 32),
-                  
-                  // Action Cards
-                  LayoutBuilder(
-                    builder: (context, constraints) {
-                      return GridView.count(
-                        crossAxisCount: constraints.maxWidth > 800 ? 2 : 1,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: constraints.maxWidth > 800 ? 3 : 2.5,
-                        children: [
-                          _ActionCard(
-                            title: 'Users',
-                            subtitle: '${stats['totalUsers']} Total Users\nManage platform users and roles',
-                            icon: Icons.manage_accounts,
-                            onTap: () => context.push(AppRoutes.users),
-                          ),
-                          _ActionCard(
-                            title: 'Verification',
-                            subtitle: '${stats['pendingProfiles']} Profiles, ${stats['pendingStories']} Stories Pending\nReview pending profiles & stories',
-                            icon: Icons.verified_user,
-                            onTap: () => context.push(AppRoutes.verification),
-                            badgeCount: stats['pendingProfiles']! + stats['pendingStories']!,
-                          ),
-                          _ActionCard(
-                            title: 'Support',
-                            subtitle: '${stats['activeSupportChats']} Active Chats\nRespond to user inquiries',
-                            icon: Icons.headset_mic,
-                            onTap: () => context.push(AppRoutes.supportChats),
-                            badgeCount: stats['unreadSupportChats'],
-                          ),
-                          _ActionCard(
-                            title: 'Moderation',
-                            subtitle: '${stats['activeReports']} Active Reports\nReview reported content',
-                            icon: Icons.gavel,
-                            onTap: () => context.push(AppRoutes.moderation),
-                            badgeCount: stats['activeReports'],
-                            isDestructive: true,
-                          ),
-                        ],
-                      );
-                    }
+                ),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildHubCard(
+                        context,
+                        title: 'User Management',
+                        subtitle: 'Manage all ${stats['totalUsers']} registered accounts, roles, and profiles.',
+                        icon: Icons.people_alt_rounded,
+                        gradientColors: [const Color(0xFF2B2B36), const Color(0xFF18181E)],
+                        iconColor: const Color(0xFF7A7AFF),
+                        onTap: () => context.push(AppRoutes.users),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildHubCard(
+                        context,
+                        title: 'Verification Queue',
+                        subtitle: '${stats['pendingProfiles']! + stats['pendingStories']!} pending requests requiring your approval.',
+                        icon: Icons.verified_rounded,
+                        gradientColors: [const Color(0xFF362B2B), const Color(0xFF1E1818)],
+                        iconColor: const Color(0xFFFF7A7A),
+                        onTap: () => context.push(AppRoutes.verification),
+                        badgeCount: stats['pendingProfiles']! + stats['pendingStories']!,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildHubCard(
+                        context,
+                        title: 'Support Inbox',
+                        subtitle: '${stats['activeSupportChats']} active conversations with users.',
+                        icon: Icons.chat_bubble_rounded,
+                        gradientColors: [const Color(0xFF2B3631), const Color(0xFF181E1B)],
+                        iconColor: const Color(0xFF7AFFB0),
+                        onTap: () => context.push(AppRoutes.supportChats),
+                        badgeCount: stats['unreadSupportChats'],
+                      ),
+                      const SizedBox(height: 20),
+                      _buildHubCard(
+                        context,
+                        title: 'Content Moderation',
+                        subtitle: '${stats['activeReports']} user-submitted reports pending review.',
+                        icon: Icons.gavel_rounded,
+                        gradientColors: [const Color(0xFF36322B), const Color(0xFF1E1C18)],
+                        iconColor: const Color(0xFFFFC07A),
+                        onTap: () => context.push(AppRoutes.moderation),
+                        badgeCount: stats['activeReports'],
+                      ),
+                      const SizedBox(height: 48), // Bottom padding
+                    ]),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           );
         },
       ),
     );
   }
-}
 
-class _ActionCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final VoidCallback onTap;
-  final int? badgeCount;
-  final bool isDestructive;
-
-  const _ActionCard({
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.onTap,
-    this.badgeCount,
-    this.isDestructive = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    return Card(
-      elevation: 4,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
-          color: theme.colorScheme.outline.withAlpha(20), 
-          width: 1
-        ),
+  Widget _buildHubCard(
+    BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required List<Color> gradientColors,
+    required Color iconColor,
+    required VoidCallback onTap,
+    int? badgeCount,
+  }) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: gradientColors.first.withAlpha(20),
+            blurRadius: 20,
+            offset: const Offset(0, 10),
+          ),
+        ],
       ),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(24.0),
-          child: Row(
-            children: [
-              CircleAvatar(
-                radius: 32,
-                backgroundColor: isDestructive 
-                    ? Colors.redAccent.withAlpha(30) 
-                    : theme.colorScheme.primaryContainer,
-                child: Icon(
-                  icon,
-                  size: 32,
-                  color: isDestructive ? Colors.redAccent : theme.colorScheme.primary,
-                ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(28),
+          highlightColor: Colors.white.withAlpha(5),
+          splashColor: Colors.white.withAlpha(10),
+          child: Ink(
+            padding: const EdgeInsets.all(28),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: gradientColors,
               ),
-              const SizedBox(width: 24),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      title,
-                      style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      subtitle,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                        height: 1.4,
-                      ),
-                    ),
-                  ],
-                ),
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withAlpha(10),
+                width: 1,
               ),
-              if (badgeCount != null && badgeCount! > 0)
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Glowing Icon Container
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDestructive ? Colors.redAccent : theme.colorScheme.error,
-                    borderRadius: BorderRadius.circular(20),
+                    color: iconColor.withAlpha(20),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: iconColor.withAlpha(30),
+                        blurRadius: 15,
+                        spreadRadius: 2,
+                      ),
+                    ],
                   ),
-                  child: Text(
-                    '$badgeCount',
-                    style: const TextStyle(
-                      color: Colors.white, 
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                    ),
+                  child: Icon(icon, size: 32, color: iconColor),
+                ),
+                const SizedBox(width: 24),
+                // Text Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(
+                            title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          if (badgeCount != null && badgeCount > 0) ...[
+                            const SizedBox(width: 12),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: iconColor,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                '$badgeCount',
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withAlpha(150),
+                          fontSize: 15,
+                          height: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
-                )
-              else
-                Icon(Icons.arrow_forward_ios, color: theme.colorScheme.onSurfaceVariant, size: 20),
-            ],
+                ),
+                // Arrow
+                const SizedBox(width: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withAlpha(10),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    color: Colors.white,
+                    size: 16,
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
