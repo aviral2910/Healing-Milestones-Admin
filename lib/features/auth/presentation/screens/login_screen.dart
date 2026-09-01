@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import '../../../../logo/healing_milestone_logo.dart';
+import '../../../../core/theme/app_theme.dart';
+import '../../../../core/theme/theme_palette.dart';
 
 class LoginScreen extends StatelessWidget {
   const LoginScreen({super.key});
@@ -9,22 +11,13 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black, // Pure pitch black
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 450),
-            child: Card(
-              elevation: 4,
-              shadowColor: Colors.black12,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: const Padding(
-                padding: EdgeInsets.all(48.0),
-                child: _LoginForm(),
-              ),
-            ),
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: const _LoginForm(),
           ),
         ),
       ),
@@ -64,7 +57,7 @@ class _LoginFormState extends State<_LoginForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Login failed: ${e.toString().split(']').last.trim()}'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: Colors.redAccent,
         ));
       }
     } finally {
@@ -95,7 +88,7 @@ class _LoginFormState extends State<_LoginForm> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
           content: Text('Google Login failed: ${e.toString().split(']').last.trim()}'),
-          backgroundColor: Theme.of(context).colorScheme.error,
+          backgroundColor: Colors.redAccent,
         ));
       }
     } finally {
@@ -112,7 +105,7 @@ class _LoginFormState extends State<_LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = AppTheme.getThemeData(ThemePalette.goldenDark);
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -120,96 +113,139 @@ class _LoginFormState extends State<_LoginForm> {
       children: [
         const Center(
           child: SizedBox(
-            height: 80,
-            width: 80,
-            child: HealingMilestonesLogo(showText: false, logoSize: 80),
+            height: 90,
+            width: 90,
+            child: HealingMilestonesLogo(showText: false, logoSize: 90),
           ),
         ),
-        const SizedBox(height: 24),
-        Text(
+        const SizedBox(height: 32),
+        const Text(
           'Admin Portal',
           textAlign: TextAlign.center,
-          style: theme.textTheme.headlineMedium?.copyWith(
-            fontWeight: FontWeight.bold,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -0.5,
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Text(
-          'Sign in to your account',
+          'Sign in with your credentials',
           textAlign: TextAlign.center,
-          style: theme.textTheme.bodyLarge?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          style: TextStyle(
+            color: Colors.white.withAlpha(150),
+            fontSize: 16,
           ),
         ),
         const SizedBox(height: 48),
         
-        TextFormField(
+        _buildTextField(
           controller: _emailController,
-          keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(
-            labelText: 'Email Address',
-            prefixIcon: Icon(Icons.email_outlined),
-            border: OutlineInputBorder(),
-          ),
+          hint: 'Email Address',
+          icon: Icons.email_rounded,
         ),
-        const SizedBox(height: 24),
-        TextFormField(
+        const SizedBox(height: 16),
+        _buildTextField(
           controller: _passwordController,
-          obscureText: !_isPasswordVisible,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            prefixIcon: const Icon(Icons.lock_outline),
-            suffixIcon: IconButton(
-              icon: Icon(_isPasswordVisible ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-            ),
-            border: const OutlineInputBorder(),
-          ),
-          onFieldSubmitted: (_) => _login(),
+          hint: 'Password',
+          icon: Icons.lock_rounded,
+          isPassword: true,
+          onSubmitted: (_) => _login(),
         ),
         
         const SizedBox(height: 32),
         
-        FilledButton(
-          onPressed: _isLoading ? null : _login,
-          style: FilledButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-          ),
-          child: _isLoading 
-              ? const SizedBox(
-                  height: 20, width: 20, 
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ) 
-              : const Text('Sign in', style: TextStyle(fontSize: 16)),
-        ),
-        
-        const SizedBox(height: 24),
-        Row(
-          children: [
-            const Expanded(child: Divider()),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'or',
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
+        SizedBox(
+          height: 56,
+          child: ElevatedButton(
+            onPressed: _isLoading ? null : _login,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: theme.colorScheme.primary,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+              elevation: 0,
             ),
-            const Expanded(child: Divider()),
-          ],
+            child: _isLoading 
+                ? const SizedBox(
+                    height: 24, width: 24, 
+                    child: CircularProgressIndicator(color: Colors.black, strokeWidth: 2.5),
+                  ) 
+                : const Text('Sign In', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ),
         ),
-        const SizedBox(height: 24),
         
-        OutlinedButton.icon(
-          onPressed: _isLoading ? null : _loginWithGoogle,
-          icon: const Icon(Icons.login),
-          label: const Text('Sign in with Google', style: TextStyle(fontSize: 16)),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        const SizedBox(height: 32),
+        
+        SizedBox(
+          height: 56,
+          child: OutlinedButton(
+            onPressed: _isLoading ? null : _loginWithGoogle,
+            style: OutlinedButton.styleFrom(
+              foregroundColor: Colors.white,
+              side: BorderSide(color: Colors.white.withAlpha(30), width: 1.5),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  width: 24, height: 24,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Center(
+                    child: Text('G', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text('Sign in with Google', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+              ],
+            ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    bool isPassword = false,
+    Function(String)? onSubmitted,
+  }) {
+    final theme = AppTheme.getThemeData(ThemePalette.goldenDark);
+    
+    return Container(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1C1C1E),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white.withAlpha(20), width: 1),
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: isPassword && !_isPasswordVisible,
+        style: const TextStyle(color: Colors.white),
+        onFieldSubmitted: onSubmitted,
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(color: Colors.white.withAlpha(100)),
+          prefixIcon: Icon(icon, color: Colors.white.withAlpha(150)),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    _isPasswordVisible ? Icons.visibility_off : Icons.visibility,
+                    color: Colors.white.withAlpha(150),
+                  ),
+                  onPressed: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        ),
+      ),
     );
   }
 }
