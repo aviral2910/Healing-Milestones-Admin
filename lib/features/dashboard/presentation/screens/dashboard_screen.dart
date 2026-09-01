@@ -15,7 +15,7 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   final moderationRepo = ref.watch(moderationRepositoryProvider);
   final supportChatsRepo = ref.watch(supportChatsRepositoryProvider);
 
-  final users = await usersRepo.getUsers(role: 'all');
+  final users = await usersRepo.getUsers();
   
   // Pending User Verifications
   final pendingProfiles = users.where((u) => u.appliedForVerification && !u.isVerified).length;
@@ -27,10 +27,10 @@ final dashboardStatsProvider = FutureProvider<Map<String, int>>((ref) async {
   final reportsResult = await moderationRepo.getPendingReports();
   
   // Active Support Chats
-  final chatsResult = await supportChatsRepo.getActiveChats();
+  final chatsResult = await supportChatsRepo.getSupportChatsStream().first;
   int unreadSupportChats = 0;
   for (var chat in chatsResult) {
-    if (chat.adminUnreadCount > 0) unreadSupportChats++;
+    if ((chat.unreadCount['admin'] ?? 0) > 0) unreadSupportChats++;
   }
   
   return {
