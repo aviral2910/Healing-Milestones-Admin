@@ -17,23 +17,42 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(dashboardStatsProvider);
+    final theme = Theme.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.black,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        title: const Text('Engagement', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.black,
+        title: const Text('Platform Engagement', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
       ),
       body: statsAsync.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: Colors.white)),
+        loading: () => Center(child: CircularProgressIndicator(color: theme.colorScheme.primary)),
         error: (e, st) => Center(child: Text('Error: $e', style: const TextStyle(color: Colors.red))),
         data: (stats) {
           final List rawHistory = stats['platformHistory'] ?? [];
+          final Map totals = stats['totals'] ?? {};
           
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             children: [
+              // Top Metric Cards
+              Row(
+                children: [
+                  Expanded(child: _buildTopMetricCard('Total Users', totals['users'] ?? 0, Icons.people_alt_rounded, theme)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildTopMetricCard('Total Stories', totals['stories'] ?? 0, Icons.auto_stories_rounded, theme)),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(child: _buildTopMetricCard('Total Journeys', totals['journeys'] ?? 0, Icons.map_rounded, theme)),
+                  const SizedBox(width: 12),
+                  Expanded(child: _buildTopMetricCard('Total Reactions', totals['reactions'] ?? 0, Icons.favorite_rounded, theme)),
+                ],
+              ),
+              const SizedBox(height: 32),
               PaginatingChartWidget(
                 title: 'Active Users',
                 history: rawHistory,
@@ -66,15 +85,49 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF121214),
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+                  border: Border.all(color: Theme.of(context).dividerColor, width: 1),
                 ),
                 child: const Text('Coming Soon: Dynamic trending tags list and category metrics.', style: TextStyle(color: Colors.white70)),
               ),
             ],
           );
         },
+      ),
+    );
+  }
+
+  Widget _buildTopMetricCard(String title, int count, IconData icon, ThemeData theme) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: theme.dividerColor, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          )
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, color: theme.colorScheme.primary, size: 24),
+          const SizedBox(height: 12),
+          Text(
+            count.toString(),
+            style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 24, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500),
+          ),
+        ],
       ),
     );
   }
@@ -242,9 +295,9 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
           height: 300,
           padding: const EdgeInsets.only(right: 20, left: 10, top: 16, bottom: 10),
           decoration: BoxDecoration(
-            color: const Color(0xFF121214),
+            color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
+            border: Border.all(color: Theme.of(context).dividerColor, width: 1),
           ),
           child: Column(
             children: [
@@ -294,6 +347,7 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
 
   Widget _buildToggleBtn(String label, ChartPeriod filter) {
     final isSelected = filter == _period;
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
         setState(() {
@@ -302,15 +356,15 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
         });
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.15) : Colors.transparent,
+          color: isSelected ? theme.colorScheme.primary.withValues(alpha: 0.2) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
           label,
           style: TextStyle(
-            color: isSelected ? Colors.white : Colors.white54,
+            color: isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurface.withValues(alpha: 0.5),
             fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             fontSize: 12,
           ),
@@ -328,6 +382,18 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
 
     return BarChart(
       BarChartData(
+        barTouchData: BarTouchData(
+          enabled: true,
+          touchTooltipData: BarTouchTooltipData(
+            getTooltipColor: (group) => Theme.of(context).colorScheme.surface,
+            getTooltipItem: (group, groupIndex, rod, rodIndex) {
+              return BarTooltipItem(
+                '${rod.toY.toInt()}',
+                const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+              );
+            },
+          ),
+        ),
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
@@ -395,6 +461,20 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
 
     return LineChart(
       LineChartData(
+        lineTouchData: LineTouchData(
+          enabled: true,
+          touchTooltipData: LineTouchTooltipData(
+            getTooltipColor: (touchedSpot) => Theme.of(context).colorScheme.surface,
+            getTooltipItems: (touchedSpots) {
+              return touchedSpots.map((spot) {
+                return LineTooltipItem(
+                  '${spot.y.toInt()}',
+                  const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                );
+              }).toList();
+            },
+          ),
+        ),
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
