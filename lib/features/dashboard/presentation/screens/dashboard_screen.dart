@@ -123,7 +123,7 @@ class DashboardScreen extends ConsumerWidget {
                         physics: const NeverScrollableScrollPhysics(),
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 2.0,
+                        childAspectRatio: 1.5,
                         children: [
                           _buildStatCard('Total Users', '${stats['totalUsers']}', Icons.people, Colors.blueAccent),
                           _buildStatCard('Stories Published', '${stats['totalStories']}', Icons.auto_stories, Colors.purpleAccent),
@@ -214,7 +214,7 @@ class DashboardScreen extends ConsumerWidget {
 
   Widget _buildStatCard(String title, String value, IconData icon, Color color) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF121214),
         borderRadius: BorderRadius.circular(20),
