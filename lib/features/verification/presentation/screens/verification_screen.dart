@@ -10,8 +10,7 @@ import '../../../stories/data/stories_repository.dart';
 import '../../../../core/presentation/widgets/admin_story_list_tile.dart';
 
 final pendingProfilesProvider = FutureProvider((ref) async {
-  final users = await ref.watch(usersRepositoryProvider).getUsers();
-  return users.where((u) => u.appliedForVerification && !u.isVerified).toList();
+  return ref.watch(usersRepositoryProvider).getAdminRequests();
 });
 
 final pendingStoriesProvider = FutureProvider((ref) {
