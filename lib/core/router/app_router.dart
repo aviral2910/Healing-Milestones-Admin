@@ -34,13 +34,13 @@ final GlobalKey<NavigatorState> _shellNavigatorSettingsKey =
     GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final adminClaim = ref.watch(adminClaimProvider);
-
-  return GoRouter(
+  final router = GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: AppRoutes.splash,
     redirect: (context, state) {
+      final authState = ref.read(authStateProvider);
+      final adminClaim = ref.read(adminClaimProvider);
+
       if (authState.isLoading || adminClaim.isLoading) return null;
 
       final user = authState.value;
@@ -178,4 +178,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
     ],
   );
+
+  ref.listen(authStateProvider, (_, __) => router.refresh());
+  ref.listen(adminClaimProvider, (_, __) => router.refresh());
+
+  return router;
 });
