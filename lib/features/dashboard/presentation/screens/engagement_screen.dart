@@ -109,9 +109,9 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
       if (_period == ChartPeriod.weekly) {
         _currentCursor = _currentCursor.add(const Duration(days: 7));
       } else if (_period == ChartPeriod.monthly) {
-        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month + 1, 1);
+        _currentCursor = _currentCursor.add(const Duration(days: 30));
       } else if (_period == ChartPeriod.yearly) {
-        _currentCursor = DateTime(_currentCursor.year + 1, 1, 1);
+        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month + 12, _currentCursor.day);
       }
       if (_currentCursor.isAfter(DateTime.now())) {
         _currentCursor = DateTime.now();
@@ -124,24 +124,23 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
       if (_period == ChartPeriod.weekly) {
         _currentCursor = _currentCursor.subtract(const Duration(days: 7));
       } else if (_period == ChartPeriod.monthly) {
-        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month - 1, 1);
+        _currentCursor = _currentCursor.subtract(const Duration(days: 30));
       } else if (_period == ChartPeriod.yearly) {
-        _currentCursor = DateTime(_currentCursor.year - 1, 1, 1);
+        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month - 12, _currentCursor.day);
       }
     });
   }
 
   String _getDateLabel() {
     if (_period == ChartPeriod.weekly) {
-      // Find the Monday of the current cursor's week
-      int weekday = _currentCursor.weekday;
-      DateTime startOfWeek = _currentCursor.subtract(Duration(days: weekday - 1));
-      DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
-      return '${DateFormat('MMM d').format(startOfWeek)} - ${DateFormat('MMM d').format(endOfWeek)}';
+      DateTime start = _currentCursor.subtract(const Duration(days: 6));
+      return '${DateFormat('MMM d').format(start)} - ${DateFormat('MMM d').format(_currentCursor)}';
     } else if (_period == ChartPeriod.monthly) {
-      return DateFormat('MMMM yyyy').format(_currentCursor);
+      DateTime start = _currentCursor.subtract(const Duration(days: 29));
+      return '${DateFormat('MMM d').format(start)} - ${DateFormat('MMM d').format(_currentCursor)}';
     } else {
-      return DateFormat('yyyy').format(_currentCursor);
+      DateTime start = DateTime(_currentCursor.year, _currentCursor.month - 11, 1);
+      return '${DateFormat('MMM yyyy').format(start)} - ${DateFormat('MMM yyyy').format(_currentCursor)}';
     }
   }
 
@@ -150,12 +149,10 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
     List<Map<String, dynamic>> result = [];
     
     if (_period == ChartPeriod.weekly) {
-      // 7 data points (Mon -> Sun)
-      int weekday = _currentCursor.weekday;
-      DateTime startOfWeek = _currentCursor.subtract(Duration(days: weekday - 1));
-      
+      // Last 7 days ending at _currentCursor
+      DateTime start = _currentCursor.subtract(const Duration(days: 6));
       for (int i = 0; i < 7; i++) {
-        DateTime day = startOfWeek.add(Duration(days: i));
+        DateTime day = start.add(Duration(days: i));
         double val = _getValueForDay(day);
         result.add({
           "label": DateFormat('E').format(day), // Mon, Tue...
@@ -163,38 +160,41 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
         });
       }
     } else if (_period == ChartPeriod.monthly) {
-      // Data points for each day in the month
-      int daysInMonth = DateTime(_currentCursor.year, _currentCursor.month + 1, 0).day;
-      for (int i = 1; i <= daysInMonth; i++) {
-        DateTime day = DateTime(_currentCursor.year, _currentCursor.month, i);
+      // Last 30 days ending at _currentCursor
+      DateTime start = _currentCursor.subtract(const Duration(days: 29));
+      for (int i = 0; i < 30; i++) {
+        DateTime day = start.add(Duration(days: i));
         double val = _getValueForDay(day);
         result.add({
-          "label": (i % 5 == 0 || i == 1) ? i.toString() : "", // Only label every 5th day
+          "label": (i % 5 == 0 || i == 29) ? DateFormat('d').format(day) : "", // Label every 5th day + last day
           "val": val,
         });
       }
     } else if (_period == ChartPeriod.yearly) {
-      // 12 data points (Jan -> Dec)
-      for (int m = 1; m <= 12; m++) {
+      // Last 12 months ending at _currentCursor month
+      for (int i = 11; i >= 0; i--) {
+        DateTime targetMonth = DateTime(_currentCursor.year, _currentCursor.month - i, 1);
         double sum = 0;
         int count = 0;
-        int daysInMonth = DateTime(_currentCursor.year, m + 1, 0).day;
-        for (int i = 1; i <= daysInMonth; i++) {
-          DateTime day = DateTime(_currentCursor.year, m, i);
+        int daysInMonth = DateTime(targetMonth.year, targetMonth.month + 1, 0).day;
+        for (int d = 1; d <= daysInMonth; d++) {
+          DateTime day = DateTime(targetMonth.year, targetMonth.month, d);
+          // If the day is in the future relative to _currentCursor, skip it so we don't count it (though our cursor is usually today)
+          if (day.isAfter(_currentCursor)) break;
+          
           double val = _getValueForDay(day);
           sum += val;
           count++;
         }
         double finalVal = widget.isAverage ? (count == 0 ? 0 : sum / count) : sum;
         result.add({
-          "label": DateFormat('MMM').format(DateTime(_currentCursor.year, m, 1)),
+          "label": DateFormat('MMM').format(targetMonth),
           "val": finalVal,
         });
       }
     }
     return result;
   }
-
   double _getValueForDay(DateTime target) {
     for (var d in widget.history) {
       DateTime rowDate = DateTime.parse(d["date"]);
