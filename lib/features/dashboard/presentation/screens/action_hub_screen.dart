@@ -45,7 +45,7 @@ class ActionHubScreen extends ConsumerWidget {
           final totalVerifications = pendingProfiles + pendingStories;
           
           return ListView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             children: [
               _buildHubCard(
                 context,
@@ -76,7 +76,6 @@ class ActionHubScreen extends ConsumerWidget {
                 icon: Icons.web_rounded,
                 theme: theme,
                 onTap: () {
-                  // TODO: Add Web Submissions Route
                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Web Submissions Route Coming Soon')));
                 },
                 badgeCount: pendingWeb,
@@ -91,6 +90,7 @@ class ActionHubScreen extends ConsumerWidget {
                 theme: theme,
                 onTap: () => context.push(AppRoutes.users),
               ),
+              const SizedBox(height: 40),
             ],
           );
         },
@@ -109,7 +109,7 @@ class ActionHubScreen extends ConsumerWidget {
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: const Color(0xFF0A0A0C), // Ultra deep black matching growth cards
+        color: const Color(0xFF0A0A0C),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3), width: 1.5),
         boxShadow: [
@@ -136,89 +136,79 @@ class ActionHubScreen extends ConsumerWidget {
                   bottom: -20,
                   child: Icon(
                     icon,
-                    size: 110,
-                    color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                    size: 140,
+                    color: theme.colorScheme.primary.withValues(alpha: 0.04),
                   ),
                 ),
                 
                 // Content
                 Padding(
                   padding: const EdgeInsets.all(24),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 1),
-                        ),
-                        child: Icon(icon, color: theme.colorScheme.primary, size: 32),
-                      ),
-                      const SizedBox(width: 20),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: Text(
-                                    title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 20,
-                                      fontWeight: FontWeight.bold,
-                                      letterSpacing: -0.5,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                if (badgeCount != null && badgeCount > 0)
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 10,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: theme.colorScheme.primary,
-                                      borderRadius: BorderRadius.circular(12),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: theme.colorScheme.primary.withValues(alpha: 0.5),
-                                          blurRadius: 8,
-                                        )
-                                      ]
-                                    ),
-                                    child: Text(
-                                      badgeCount.toString(),
-                                      style: TextStyle(
-                                        color: theme.colorScheme.onPrimary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 13,
-                                      ),
-                                    ),
-                                  ),
-                              ],
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 1),
                             ),
-                            const SizedBox(height: 8),
-                            Text(
-                              subtitle,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 14,
-                                height: 1.4,
-                                fontWeight: FontWeight.w500,
+                            child: Icon(icon, color: theme.colorScheme.primary, size: 26),
+                          ),
+                          if (badgeCount != null && badgeCount > 0)
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.4),
+                                    blurRadius: 10,
+                                    offset: const Offset(0, 4),
+                                  )
+                                ]
+                              ),
+                              child: Row(
+                                children: [
+                                  Text(
+                                    badgeCount.toString(),
+                                    style: TextStyle(
+                                      color: theme.colorScheme.onPrimary,
+                                      fontWeight: FontWeight.w900,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Icon(Icons.notifications_active_rounded, color: theme.colorScheme.onPrimary, size: 14),
+                                ],
                               ),
                             ),
-                          ],
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.5,
                         ),
                       ),
-                      const SizedBox(width: 16),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        color: Colors.white.withValues(alpha: 0.2),
-                        size: 18,
+                      const SizedBox(height: 8),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 15,
+                          height: 1.4,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
                     ],
                   ),
