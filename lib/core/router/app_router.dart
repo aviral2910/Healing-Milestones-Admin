@@ -23,11 +23,16 @@ import '../../features/support_chats/presentation/screens/support_chat_detail_sc
 import '../presentation/widgets/admin_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorDashboardKey = GlobalKey<NavigatorState>(debugLabel: 'dashboard');
-final GlobalKey<NavigatorState> _shellNavigatorUsersKey = GlobalKey<NavigatorState>(debugLabel: 'users');
-final GlobalKey<NavigatorState> _shellNavigatorModerationKey = GlobalKey<NavigatorState>(debugLabel: 'moderation');
-final GlobalKey<NavigatorState> _shellNavigatorSupportKey = GlobalKey<NavigatorState>(debugLabel: 'support');
-final GlobalKey<NavigatorState> _shellNavigatorSettingsKey = GlobalKey<NavigatorState>(debugLabel: 'settings');
+final GlobalKey<NavigatorState> _shellNavigatorDashboardKey =
+    GlobalKey<NavigatorState>(debugLabel: 'dashboard');
+final GlobalKey<NavigatorState> _shellNavigatorUsersKey =
+    GlobalKey<NavigatorState>(debugLabel: 'users');
+final GlobalKey<NavigatorState> _shellNavigatorModerationKey =
+    GlobalKey<NavigatorState>(debugLabel: 'moderation');
+final GlobalKey<NavigatorState> _shellNavigatorSupportKey =
+    GlobalKey<NavigatorState>(debugLabel: 'support');
+final GlobalKey<NavigatorState> _shellNavigatorSettingsKey =
+    GlobalKey<NavigatorState>(debugLabel: 'settings');
 
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
@@ -109,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Branch 1: Platform Growth
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorUsersKey, // reusing the navigator keys
+            navigatorKey: _shellNavigatorUsersKey, 
             routes: [
               GoRoute(
                 path: AppRoutes.growth,
@@ -134,52 +139,6 @@ final routerProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: AppRoutes.supportChats,
                 builder: (context, state) => const SupportChatsListScreen(),
-              ),
-            ],
-          ),
-        ],
-          ),
-          // Branch 1: Users
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorUsersKey,
-            routes: [
-              GoRoute(
-                path: AppRoutes.users,
-                builder: (context, state) => const UsersScreen(),
-              ),
-            ],
-          ),
-          // Branch 2: Moderation
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorModerationKey,
-            routes: [
-              GoRoute(
-                path: AppRoutes.moderation,
-                builder: (context, state) => const ModerationScreen(),
-              ),
-            ],
-          ),
-          // Branch 3: Support
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorSupportKey,
-            routes: [
-              GoRoute(
-                path: AppRoutes.supportChats,
-                builder: (context, state) => const SupportChatsListScreen(),
-              ),
-            ],
-          ),
-          // Branch 4: Settings
-          StatefulShellBranch(
-            navigatorKey: _shellNavigatorSettingsKey,
-            routes: [
-              GoRoute(
-                path: AppRoutes.settings,
-                builder: (context, state) => const SettingsScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.manageAdmins,
-                builder: (context, state) => const ManageAdminAccessScreen(),
               ),
             ],
           ),
