@@ -33,7 +33,7 @@ class PlatformGrowthScreen extends ConsumerWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 crossAxisSpacing: 16,
                 mainAxisSpacing: 16,
-                childAspectRatio: 1.1,
+                childAspectRatio: 0.9,
                 children: [
                   _buildStatCard('Total Users', '${totals['users'] ?? 0}', Icons.people_alt_rounded, theme),
                   _buildStatCard('Stories Published', '${totals['stories'] ?? 0}', Icons.auto_stories_rounded, theme),
