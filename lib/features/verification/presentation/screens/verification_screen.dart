@@ -122,104 +122,194 @@ class _PendingProfilesTab extends ConsumerWidget {
           itemBuilder: (context, index) {
             final user = profiles[index];
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF0A0A0C), // Ultra deep black
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.15), width: 1.0),
+                color: const Color(0xFF0A0A0C), // Deep premium black
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2), width: 1.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                    context.push(AppRoutes.userDetail(user.userId, mode: 'verify'));
-                  },
-                  borderRadius: BorderRadius.circular(20),
-                  highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
-                  splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        // Avatar
-                        Container(
-                          width: 60,
-                          height: 60,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3), width: 2),
-                            boxShadow: [
-                              BoxShadow(
-                                color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                                blurRadius: 10,
-                                spreadRadius: 2,
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 30,
-                            backgroundImage: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                                ? NetworkImage(user.profilePicture!)
-                                : null,
-                            backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.1),
-                            child: user.profilePicture == null || user.profilePicture!.isEmpty 
-                                ? Icon(Icons.person_rounded, color: theme.colorScheme.primary, size: 30) 
-                                : null,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        
-                        // User Info
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user.displayName,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: -0.3,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              if (user.username != null)
-                                Text(
-                                  '@${user.username}',
-                                  style: TextStyle(color: theme.colorScheme.primary, fontSize: 13, fontWeight: FontWeight.w600),
-                                ),
-                              const SizedBox(height: 4),
-                              Text(
-                                user.email,
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Verification badge + arrow
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                              decoration: BoxDecoration(
-                                color: Colors.orange.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Text('PENDING', style: TextStyle(color: Colors.orange, fontSize: 10, fontWeight: FontWeight.bold)),
-                            ),
-                            const SizedBox(height: 12),
-                            Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.2), size: 16),
-                          ],
-                        ),
-                      ],
+              child: Stack(
+                children: [
+                  // Illuminated watermark background
+                  Positioned(
+                    right: -20,
+                    bottom: -20,
+                    child: Icon(
+                      Icons.how_to_reg_rounded,
+                      size: 140,
+                      color: theme.colorScheme.primary.withValues(alpha: 0.03),
                     ),
                   ),
-                ),
+                  Material(
+                    color: Colors.transparent,
+                    child: InkWell(
+                      onTap: () {
+                        context.push(AppRoutes.userDetail(user.userId, mode: 'verify'));
+                      },
+                      borderRadius: BorderRadius.circular(24),
+                      highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
+                      splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          children: [
+                            // Premium Avatar
+                            Container(
+                              width: 65,
+                              height: 65,
+                              padding: const EdgeInsets.all(3), // Inner spacing for ring
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                gradient: LinearGradient(
+                                  colors: [
+                                    theme.colorScheme.primary,
+                                    theme.colorScheme.primary.withValues(alpha: 0.2),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.2),
+                                    blurRadius: 15,
+                                    spreadRadius: 1,
+                                  ),
+                                ],
+                              ),
+                              child: Container(
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Color(0xFF0A0A0C),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(2),
+                                  child: CircleAvatar(
+                                    backgroundImage: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                                        ? NetworkImage(user.profilePicture!)
+                                        : null,
+                                    backgroundColor: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    child: user.profilePicture == null || user.profilePicture!.isEmpty 
+                                        ? Icon(Icons.person_rounded, color: theme.colorScheme.primary, size: 28) 
+                                        : null,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 18),
+                            
+                            // User Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: Text(
+                                          user.displayName,
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w800,
+                                            letterSpacing: -0.4,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  if (user.username != null)
+                                    Row(
+                                      children: [
+                                        Icon(Icons.alternate_email_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.8), size: 14),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          user.username!,
+                                          style: TextStyle(color: theme.colorScheme.primary.withValues(alpha: 0.9), fontSize: 14, fontWeight: FontWeight.w600),
+                                        ),
+                                      ],
+                                    ),
+                                  const SizedBox(height: 8),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.mail_outline_rounded, color: Colors.white.withValues(alpha: 0.4), size: 14),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          user.email,
+                                          style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 13, fontWeight: FontWeight.w500),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  if (user.specialty != null && user.specialty!.isNotEmpty) ...[
+                                    const SizedBox(height: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.2)),
+                                      ),
+                                      child: Text(
+                                        user.specialty!,
+                                        style: TextStyle(color: theme.colorScheme.primary, fontSize: 11, fontWeight: FontWeight.bold),
+                                      ),
+                                    ),
+                                  ]
+                                ],
+                              ),
+                            ),
+                            
+                            // Verification badge + arrow
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                  decoration: BoxDecoration(
+                                    color: Colors.amber.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.access_time_filled_rounded, color: Colors.amber, size: 14),
+                                      const SizedBox(width: 4),
+                                      const Text('REVIEW', style: TextStyle(color: Colors.amber, fontSize: 11, fontWeight: FontWeight.w900, letterSpacing: 0.5)),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.03),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(Icons.arrow_forward_ios_rounded, color: Colors.white.withValues(alpha: 0.4), size: 14),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             );
           },
