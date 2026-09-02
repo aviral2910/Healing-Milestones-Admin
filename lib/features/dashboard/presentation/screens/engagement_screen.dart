@@ -209,6 +209,22 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
   Widget build(BuildContext context) {
     final data = _processData();
 
+    DateTime oldestDate = DateTime.now();
+    if (widget.history.isNotEmpty) {
+      oldestDate = DateTime.parse(widget.history.first["date"]);
+    }
+
+    bool canGoBack = false;
+    if (_period == ChartPeriod.weekly) {
+      canGoBack = _currentCursor.subtract(const Duration(days: 6)).isAfter(oldestDate);
+    } else if (_period == ChartPeriod.monthly) {
+      canGoBack = _currentCursor.subtract(const Duration(days: 29)).isAfter(oldestDate);
+    } else if (_period == ChartPeriod.yearly) {
+      canGoBack = DateTime(_currentCursor.year, _currentCursor.month - 11, 1).isAfter(oldestDate);
+    }
+
+    bool canGoForward = _currentCursor.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -236,12 +252,13 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.chevron_left, color: Colors.white),
-                    onPressed: _prevPeriod,
+                    onPressed: canGoBack ? _prevPeriod : null,
+                    disabledColor: Colors.white24,
                   ),
                   Text(_getDateLabel(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                   IconButton(
                     icon: const Icon(Icons.chevron_right, color: Colors.white),
-                    onPressed: _currentCursor.isAfter(DateTime.now().subtract(const Duration(days: 1))) ? null : _nextPeriod,
+                    onPressed: canGoForward ? _nextPeriod : null,
                     disabledColor: Colors.white24,
                   ),
                 ],
