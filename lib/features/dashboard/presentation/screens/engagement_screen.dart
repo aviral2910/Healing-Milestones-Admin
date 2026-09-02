@@ -343,9 +343,13 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
               showTitles: true,
               getTitlesWidget: (value, meta) {
                 if (value.toInt() >= 0 && value.toInt() < data.length) {
+                  // If it's a Yearly graph (12 bars), only show every other month to prevent crowding
+                  if (data.length == 12 && value.toInt() % 2 != 0) {
+                    return const Text('');
+                  }
                   return Padding(
                     padding: const EdgeInsets.only(top: 8.0),
-                    child: Text(data[value.toInt()]['label'], style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
+                    child: Text(data[value.toInt()]['label'], style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 10)),
                   );
                 }
                 return const Text('');
