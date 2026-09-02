@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/theme/theme_palette.dart';
@@ -28,7 +29,6 @@ final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
   }
   
   return {
-    // REAL DATA
     'totalUsers': totalUsersCount,
     'pendingProfiles': pendingProfiles,
     'pendingStories': storiesResult.length,
@@ -36,11 +36,17 @@ final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
     'activeSupportChats': chatsResult.length,
     'unreadSupportChats': unreadSupportChats,
     
-    // MOCK DATA FOR UI PREVIEW (To be connected to Redis later)
-    'dau': 1245,
-    'mau': 14890,
+    // MOCK DATA FOR GRAPH PREVIEW
+    'dauHistory': [
+      {'day': 'Mon', 'users': 820},
+      {'day': 'Tue', 'users': 940},
+      {'day': 'Wed', 'users': 1100},
+      {'day': 'Thu', 'users': 1050},
+      {'day': 'Fri', 'users': 1200},
+      {'day': 'Sat', 'users': 1350},
+      {'day': 'Sun', 'users': 1500},
+    ],
     'totalStories': 8432,
-    'totalMilestones': 42100,
     'reactionsToday': 850,
     'trendingStories': [
       {'title': 'Finding light after 10 years of addiction...', 'author': 'Sarah J.', 'reactions': 342},
@@ -111,26 +117,13 @@ class DashboardScreen extends ConsumerWidget {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
                       
-                      // --- PLATFORM ANALYTICS SECTION ---
+                      // --- PLATFORM ANALYTICS SECTION WITH GRAPH ---
                       const Text(
-                        'Platform Growth',
+                        'Active Users (7 Days)',
                         style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 16),
-                      GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.5,
-                        children: [
-                          _buildStatCard('Active Users Today', '${stats['dau']}', Icons.local_fire_department, Colors.orangeAccent),
-                          _buildStatCard('Total Users', '${stats['totalUsers']}', Icons.people, Colors.blueAccent),
-                          _buildStatCard('Stories Published', '${stats['totalStories']}', Icons.auto_stories, Colors.purpleAccent),
-                          _buildStatCard('Milestones Reached', '${stats['totalMilestones']}', Icons.flag, Colors.greenAccent),
-                        ],
-                      ),
+                      _buildGraphSection(theme, stats['dauHistory']),
                       
                       const SizedBox(height: 40),
                       
@@ -176,7 +169,7 @@ class DashboardScreen extends ConsumerWidget {
                       _buildHubCard(
                         context,
                         title: 'User Directory',
-                        subtitle: 'Manage all accounts, roles, and profiles.',
+                        subtitle: 'Manage ${stats['totalUsers']} total accounts, roles, and profiles.',
                         icon: Icons.manage_accounts,
                         gradientColors: [const Color(0xFF2B2B36), const Color(0xFF18181E)],
                         iconColor: const Color(0xFF7A7AFF),
@@ -205,42 +198,91 @@ class DashboardScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatCard(String title, String value, IconData icon, Color color) {
+  Widget _buildGraphSection(ThemeData theme, List<dynamic> dauHistory) {
+    List<FlSpot> spots = [];
+    for (int i = 0; i < dauHistory.length; i++) {
+      spots.add(FlSpot(i.toDouble(), (dauHistory[i]['users'] as int).toDouble()));
+    }
+    
     return Container(
-      padding: const EdgeInsets.all(20),
+      height: 250,
+      padding: const EdgeInsets.only(right: 24, left: 12, top: 32, bottom: 12),
       decoration: BoxDecoration(
         color: const Color(0xFF121214),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withAlpha(10), width: 1),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icon, color: color, size: 28),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.w900,
-                ),
+      child: LineChart(
+        LineChartData(
+          gridData: FlGridData(
+            show: true,
+            drawVerticalLine: false,
+            horizontalInterval: 500,
+            getDrawingHorizontalLine: (value) {
+              return FlLine(
+                color: Colors.white.withAlpha(10),
+                strokeWidth: 1,
+                dashArray: [5, 5],
+              );
+            },
+          ),
+          titlesData: FlTitlesData(
+            show: true,
+            rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+            bottomTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                reservedSize: 30,
+                interval: 1,
+                getTitlesWidget: (value, meta) {
+                  if (value.toInt() >= 0 && value.toInt() < dauHistory.length) {
+                    return Padding(
+                      padding: const EdgeInsets.only(top: 10.0),
+                      child: Text(
+                        dauHistory[value.toInt()]['day'],
+                        style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12, fontWeight: FontWeight.bold),
+                      ),
+                    );
+                  }
+                  return const Text('');
+                },
               ),
-              const SizedBox(height: 2),
-              Text(
-                title,
-                style: TextStyle(
-                  color: Colors.white.withAlpha(120),
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+            ),
+            leftTitles: AxisTitles(
+              sideTitles: SideTitles(
+                showTitles: true,
+                interval: 500,
+                reservedSize: 42,
+                getTitlesWidget: (value, meta) {
+                  return Text(
+                    '${value.toInt()}',
+                    style: TextStyle(color: Colors.white.withAlpha(150), fontSize: 12),
+                  );
+                },
               ),
-            ],
-          )
-        ],
+            ),
+          ),
+          borderData: FlBorderData(show: false),
+          minX: 0,
+          maxX: 6,
+          minY: 0,
+          maxY: 2000,
+          lineBarsData: [
+            LineChartBarData(
+              spots: spots,
+              isCurved: true,
+              color: theme.colorScheme.primary,
+              barWidth: 4,
+              isStrokeCapRound: true,
+              dotData: const FlDotData(show: false),
+              belowBarData: BarAreaData(
+                show: true,
+                color: theme.colorScheme.primary.withAlpha(40),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
