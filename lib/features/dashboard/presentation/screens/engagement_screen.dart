@@ -34,31 +34,14 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
           final Map totals = stats['totals'] ?? {};
           
           return ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
             children: [
-              // Top Metric Cards
-              Row(
-                children: [
-                  Expanded(child: _buildTopMetricCard('Total Users', totals['users'] ?? 0, Icons.people_alt_rounded, theme)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildTopMetricCard('Total Stories', totals['stories'] ?? 0, Icons.auto_stories_rounded, theme)),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(child: _buildTopMetricCard('Total Journeys', totals['journeys'] ?? 0, Icons.map_rounded, theme)),
-                  const SizedBox(width: 12),
-                  Expanded(child: _buildTopMetricCard('Total Reactions', totals['reactions'] ?? 0, Icons.favorite_rounded, theme)),
-                ],
-              ),
-              const SizedBox(height: 32),
               PaginatingChartWidget(
                 title: 'Active Users',
                 history: rawHistory,
                 dataKey: 'dau',
-                color: const Color(0xFF6366F1), // Indigo
-                isAverage: true, // If we need to aggregate daily to monthly, we use average
+                color: theme.colorScheme.primary,
+                isAverage: true,
               ),
               const SizedBox(height: 40),
               
@@ -66,8 +49,8 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
                 title: 'Published Stories',
                 history: rawHistory,
                 dataKey: 'stories',
-                color: const Color(0xFFF59E0B), // Amber
-                isAverage: false, // Stories should be summed
+                color: theme.colorScheme.primary,
+                isAverage: false,
               ),
               const SizedBox(height: 40),
               
@@ -75,7 +58,7 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
                 title: 'Created Journeys',
                 history: rawHistory,
                 dataKey: 'journeys',
-                color: const Color(0xFF10B981), // Emerald
+                color: theme.colorScheme.primary,
                 isAverage: false,
               ),
               const SizedBox(height: 40),
@@ -94,40 +77,6 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildTopMetricCard(String title, int count, IconData icon, ThemeData theme) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: theme.dividerColor, width: 1),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.2),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          )
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, color: theme.colorScheme.primary, size: 24),
-          const SizedBox(height: 12),
-          Text(
-            count.toString(),
-            style: TextStyle(color: theme.colorScheme.onSurface, fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(color: theme.colorScheme.onSurface.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500),
-          ),
-        ],
       ),
     );
   }
