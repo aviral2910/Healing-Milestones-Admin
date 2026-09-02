@@ -209,21 +209,23 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
   Widget build(BuildContext context) {
     final data = _processData();
 
-    DateTime oldestDate = DateTime.now();
+    DateTime _strip(DateTime dt) => DateTime(dt.year, dt.month, dt.day);
+    
+    DateTime oldestDate = _strip(DateTime.now());
     if (widget.history.isNotEmpty) {
-      oldestDate = DateTime.parse(widget.history.first["date"]);
+      oldestDate = _strip(DateTime.parse(widget.history.first["date"]));
     }
 
     bool canGoBack = false;
     if (_period == ChartPeriod.weekly) {
-      canGoBack = _currentCursor.subtract(const Duration(days: 6)).isAfter(oldestDate);
+      canGoBack = _strip(_currentCursor.subtract(const Duration(days: 6))).isAfter(oldestDate);
     } else if (_period == ChartPeriod.monthly) {
-      canGoBack = _currentCursor.subtract(const Duration(days: 29)).isAfter(oldestDate);
+      canGoBack = _strip(_currentCursor.subtract(const Duration(days: 29))).isAfter(oldestDate);
     } else if (_period == ChartPeriod.yearly) {
-      canGoBack = DateTime(_currentCursor.year, _currentCursor.month - 11, 1).isAfter(oldestDate);
+      canGoBack = _strip(DateTime(_currentCursor.year, _currentCursor.month - 11, 1)).isAfter(oldestDate);
     }
 
-    bool canGoForward = _currentCursor.isBefore(DateTime.now().subtract(const Duration(days: 1)));
+    bool canGoForward = _strip(_currentCursor).isBefore(_strip(DateTime.now()));
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,13 +253,13 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.chevron_left, color: Colors.white),
+                    icon: const Icon(Icons.chevron_left), color: Colors.white,
                     onPressed: canGoBack ? _prevPeriod : null,
                     disabledColor: Colors.white24,
                   ),
                   Text(_getDateLabel(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
                   IconButton(
-                    icon: const Icon(Icons.chevron_right, color: Colors.white),
+                    icon: const Icon(Icons.chevron_right), color: Colors.white,
                     onPressed: canGoForward ? _nextPeriod : null,
                     disabledColor: Colors.white24,
                   ),
