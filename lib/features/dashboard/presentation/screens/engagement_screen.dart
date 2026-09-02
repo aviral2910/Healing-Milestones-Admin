@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'dashboard_screen.dart'; // To reuse the provider
+import 'package:intl/intl.dart';
+import 'dashboard_screen.dart';
 
-enum TimeFilter { daily, weekly, monthly }
+enum ChartPeriod { weekly, monthly, yearly }
 
 class EngagementScreen extends ConsumerStatefulWidget {
   const EngagementScreen({Key? key}) : super(key: key);
@@ -13,10 +14,6 @@ class EngagementScreen extends ConsumerStatefulWidget {
 }
 
 class _EngagementScreenState extends ConsumerState<EngagementScreen> {
-  TimeFilter _usersFilter = TimeFilter.daily;
-  TimeFilter _storiesFilter = TimeFilter.daily;
-  TimeFilter _journeysFilter = TimeFilter.daily;
-
   @override
   Widget build(BuildContext context) {
     final statsAsync = ref.watch(dashboardStatsProvider);
@@ -37,34 +34,28 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
           return ListView(
             padding: const EdgeInsets.all(24),
             children: [
-              _buildGraphSection(
+              PaginatingChartWidget(
                 title: 'Active Users',
                 history: rawHistory,
                 dataKey: 'dau',
-                filter: _usersFilter,
-                onFilterChanged: (f) => setState(() => _usersFilter = f),
                 color: const Color(0xFF6366F1), // Indigo
-                isAverage: true, // DAU shouldn't be summed for weekly, it should be averaged
+                isAverage: true, // If we need to aggregate daily to monthly, we use average
               ),
               const SizedBox(height: 40),
               
-              _buildGraphSection(
+              PaginatingChartWidget(
                 title: 'Published Stories',
                 history: rawHistory,
                 dataKey: 'stories',
-                filter: _storiesFilter,
-                onFilterChanged: (f) => setState(() => _storiesFilter = f),
                 color: const Color(0xFFF59E0B), // Amber
                 isAverage: false, // Stories should be summed
               ),
               const SizedBox(height: 40),
               
-              _buildGraphSection(
+              PaginatingChartWidget(
                 title: 'Created Journeys',
                 history: rawHistory,
                 dataKey: 'journeys',
-                filter: _journeysFilter,
-                onFilterChanged: (f) => setState(() => _journeysFilter = f),
                 color: const Color(0xFF10B981), // Emerald
                 isAverage: false,
               ),
@@ -87,17 +78,136 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
       ),
     );
   }
+}
 
-  Widget _buildGraphSection({
-    required String title,
-    required List history,
-    required String dataKey,
-    required TimeFilter filter,
-    required ValueChanged<TimeFilter> onFilterChanged,
-    required Color color,
-    required bool isAverage,
-  }) {
-    final processedData = _processData(history, filter, dataKey, isAverage);
+class PaginatingChartWidget extends StatefulWidget {
+  final String title;
+  final List history;
+  final String dataKey;
+  final Color color;
+  final bool isAverage;
+
+  const PaginatingChartWidget({
+    Key? key,
+    required this.title,
+    required this.history,
+    required this.dataKey,
+    required this.color,
+    required this.isAverage,
+  }) : super(key: key);
+
+  @override
+  State<PaginatingChartWidget> createState() => _PaginatingChartWidgetState();
+}
+
+class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
+  ChartPeriod _period = ChartPeriod.weekly;
+  DateTime _currentCursor = DateTime.now(); // Represents the "end" or "focus" date of the view
+
+  void _nextPeriod() {
+    setState(() {
+      if (_period == ChartPeriod.weekly) {
+        _currentCursor = _currentCursor.add(const Duration(days: 7));
+      } else if (_period == ChartPeriod.monthly) {
+        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month + 1, 1);
+      } else if (_period == ChartPeriod.yearly) {
+        _currentCursor = DateTime(_currentCursor.year + 1, 1, 1);
+      }
+      if (_currentCursor.isAfter(DateTime.now())) {
+        _currentCursor = DateTime.now();
+      }
+    });
+  }
+
+  void _prevPeriod() {
+    setState(() {
+      if (_period == ChartPeriod.weekly) {
+        _currentCursor = _currentCursor.subtract(const Duration(days: 7));
+      } else if (_period == ChartPeriod.monthly) {
+        _currentCursor = DateTime(_currentCursor.year, _currentCursor.month - 1, 1);
+      } else if (_period == ChartPeriod.yearly) {
+        _currentCursor = DateTime(_currentCursor.year - 1, 1, 1);
+      }
+    });
+  }
+
+  String _getDateLabel() {
+    if (_period == ChartPeriod.weekly) {
+      // Find the Monday of the current cursor's week
+      int weekday = _currentCursor.weekday;
+      DateTime startOfWeek = _currentCursor.subtract(Duration(days: weekday - 1));
+      DateTime endOfWeek = startOfWeek.add(const Duration(days: 6));
+      return '${DateFormat('MMM d').format(startOfWeek)} - ${DateFormat('MMM d').format(endOfWeek)}';
+    } else if (_period == ChartPeriod.monthly) {
+      return DateFormat('MMMM yyyy').format(_currentCursor);
+    } else {
+      return DateFormat('yyyy').format(_currentCursor);
+    }
+  }
+
+  // Returns { "label": str, "val": double }
+  List<Map<String, dynamic>> _processData() {
+    List<Map<String, dynamic>> result = [];
+    
+    if (_period == ChartPeriod.weekly) {
+      // 7 data points (Mon -> Sun)
+      int weekday = _currentCursor.weekday;
+      DateTime startOfWeek = _currentCursor.subtract(Duration(days: weekday - 1));
+      
+      for (int i = 0; i < 7; i++) {
+        DateTime day = startOfWeek.add(Duration(days: i));
+        double val = _getValueForDay(day);
+        result.add({
+          "label": DateFormat('E').format(day), // Mon, Tue...
+          "val": val,
+        });
+      }
+    } else if (_period == ChartPeriod.monthly) {
+      // Data points for each day in the month
+      int daysInMonth = DateTime(_currentCursor.year, _currentCursor.month + 1, 0).day;
+      for (int i = 1; i <= daysInMonth; i++) {
+        DateTime day = DateTime(_currentCursor.year, _currentCursor.month, i);
+        double val = _getValueForDay(day);
+        result.add({
+          "label": (i % 5 == 0 || i == 1) ? i.toString() : "", // Only label every 5th day
+          "val": val,
+        });
+      }
+    } else if (_period == ChartPeriod.yearly) {
+      // 12 data points (Jan -> Dec)
+      for (int m = 1; m <= 12; m++) {
+        double sum = 0;
+        int count = 0;
+        int daysInMonth = DateTime(_currentCursor.year, m + 1, 0).day;
+        for (int i = 1; i <= daysInMonth; i++) {
+          DateTime day = DateTime(_currentCursor.year, m, i);
+          double val = _getValueForDay(day);
+          sum += val;
+          count++;
+        }
+        double finalVal = widget.isAverage ? (count == 0 ? 0 : sum / count) : sum;
+        result.add({
+          "label": DateFormat('MMM').format(DateTime(_currentCursor.year, m, 1)),
+          "val": finalVal,
+        });
+      }
+    }
+    return result;
+  }
+
+  double _getValueForDay(DateTime target) {
+    for (var d in widget.history) {
+      DateTime rowDate = DateTime.parse(d["date"]);
+      if (rowDate.year == target.year && rowDate.month == target.month && rowDate.day == target.day) {
+        return (d[widget.dataKey] as num).toDouble();
+      }
+    }
+    return 0.0;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = _processData();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,28 +215,49 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
-            _buildToggleGroup(filter, onFilterChanged),
+            Text(widget.title, style: const TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+            _buildToggleGroup(),
           ],
         ),
         const SizedBox(height: 16),
         Container(
-          height: 250,
-          padding: const EdgeInsets.only(right: 20, left: 10, top: 30, bottom: 10),
+          height: 300,
+          padding: const EdgeInsets.only(right: 20, left: 10, top: 16, bottom: 10),
           decoration: BoxDecoration(
             color: const Color(0xFF121214),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
           ),
-          child: processedData.isEmpty 
-              ? const Center(child: Text("No data yet.", style: TextStyle(color: Colors.white54)))
-              : _buildChart(processedData, color, filter),
+          child: Column(
+            children: [
+              // Pagination Controls
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.chevron_left, color: Colors.white),
+                    onPressed: _prevPeriod,
+                  ),
+                  Text(_getDateLabel(), style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.bold)),
+                  IconButton(
+                    icon: const Icon(Icons.chevron_right, color: Colors.white),
+                    onPressed: _currentCursor.isAfter(DateTime.now().subtract(const Duration(days: 1))) ? null : _nextPeriod,
+                    disabledColor: Colors.white24,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: _period == ChartPeriod.monthly ? _buildLineChart(data, widget.color) : _buildBarChart(data, widget.color),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildToggleGroup(TimeFilter currentFilter, ValueChanged<TimeFilter> onChanged) {
+  Widget _buildToggleGroup() {
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFF1E1E24),
@@ -134,18 +265,23 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
       ),
       child: Row(
         children: [
-          _buildToggleBtn('D', TimeFilter.daily, currentFilter, onChanged),
-          _buildToggleBtn('W', TimeFilter.weekly, currentFilter, onChanged),
-          _buildToggleBtn('M', TimeFilter.monthly, currentFilter, onChanged),
+          _buildToggleBtn('Weekly', ChartPeriod.weekly),
+          _buildToggleBtn('Monthly', ChartPeriod.monthly),
+          _buildToggleBtn('Yearly', ChartPeriod.yearly),
         ],
       ),
     );
   }
 
-  Widget _buildToggleBtn(String label, TimeFilter filter, TimeFilter current, ValueChanged<TimeFilter> onChanged) {
-    final isSelected = filter == current;
+  Widget _buildToggleBtn(String label, ChartPeriod filter) {
+    final isSelected = filter == _period;
     return GestureDetector(
-      onTap: () => onChanged(filter),
+      onTap: () {
+        setState(() {
+          _period = filter;
+          _currentCursor = DateTime.now(); // reset cursor to now when switching filters
+        });
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
@@ -162,47 +298,6 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
         ),
       ),
     );
-  }
-
-  List<Map<String, dynamic>> _processData(List rawData, TimeFilter filter, String key, bool isAverage) {
-    if (rawData.isEmpty) return [];
-
-    if (filter == TimeFilter.daily) {
-      // Just return the last 7 days for readability
-      var sublist = rawData.length > 7 ? rawData.sublist(rawData.length - 7) : rawData;
-      return sublist.map((e) {
-        // e["date"] is "2023-10-01" -> extract "10-01" or parse to Weekday
-        DateTime dt = DateTime.parse(e["date"]);
-        return {"label": "${dt.month}/${dt.day}", "val": (e[key] as num).toDouble()};
-      }).toList();
-    } 
-    else if (filter == TimeFilter.weekly) {
-      // Group last 28 days into 4 weeks
-      var sublist = rawData.length > 28 ? rawData.sublist(rawData.length - 28) : rawData;
-      List<Map<String, dynamic>> weeks = [];
-      for (int i = 0; i < sublist.length; i += 7) {
-        var chunk = sublist.sublist(i, (i + 7 > sublist.length) ? sublist.length : i + 7);
-        double sum = 0;
-        for (var c in chunk) sum += (c[key] as num).toDouble();
-        double val = isAverage ? (sum / chunk.length) : sum;
-        weeks.add({"label": "W${(i/7).floor() + 1}", "val": val});
-      }
-      return weeks;
-    } 
-    else {
-      // Monthly (For now, just return the sum/avg of the whole 30 days as "This Month")
-      double sum = 0;
-      for (var c in rawData) sum += (c[key] as num).toDouble();
-      double val = isAverage ? (sum / rawData.length) : sum;
-      return [{"label": "This M.", "val": val}];
-    }
-  }
-
-  Widget _buildChart(List<Map<String, dynamic>> data, Color color, TimeFilter filter) {
-    if (filter == TimeFilter.weekly || filter == TimeFilter.monthly) {
-      return _buildBarChart(data, color);
-    }
-    return _buildLineChart(data, color);
   }
 
   Widget _buildBarChart(List<Map<String, dynamic>> data, Color color) {
@@ -258,7 +353,7 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
               BarChartRodData(
                 toY: data[index]['val'],
                 color: color,
-                width: data.length > 7 ? 8 : 24, // Thinner bars if many, thicker if few
+                width: data.length > 7 ? 12 : 24, // Thinner bars for yearly, thicker for weekly
                 borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
               )
             ],
@@ -273,7 +368,7 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
     for (var d in data) {
       if (d['val'] > maxY) maxY = d['val'];
     }
-    if (maxY == 0) maxY = 10; // default ceiling
+    if (maxY == 0) maxY = 10;
 
     return LineChart(
       LineChartData(
@@ -336,7 +431,7 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
             color: color,
             barWidth: 3,
             isStrokeCapRound: true,
-            dotData: const FlDotData(show: true),
+            dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
               color: color.withValues(alpha: 0.15),
