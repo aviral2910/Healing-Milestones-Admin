@@ -265,9 +265,9 @@ class _PaginatingChartWidgetState extends State<PaginatingChartWidget> {
       ),
       child: Row(
         children: [
-          _buildToggleBtn('Weekly', ChartPeriod.weekly),
-          _buildToggleBtn('Monthly', ChartPeriod.monthly),
-          _buildToggleBtn('Yearly', ChartPeriod.yearly),
+          _buildToggleBtn('W', ChartPeriod.weekly),
+          _buildToggleBtn('M', ChartPeriod.monthly),
+          _buildToggleBtn('Y', ChartPeriod.yearly),
         ],
       ),
     );
