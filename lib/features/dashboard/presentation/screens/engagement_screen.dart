@@ -120,7 +120,7 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
           ),
           child: processedData.isEmpty 
               ? const Center(child: Text("No data yet.", style: TextStyle(color: Colors.white54)))
-              : _buildChart(processedData, color),
+              : _buildChart(processedData, color, filter),
         ),
       ],
     );
@@ -198,7 +198,77 @@ class _EngagementScreenState extends ConsumerState<EngagementScreen> {
     }
   }
 
-  Widget _buildChart(List<Map<String, dynamic>> data, Color color) {
+  Widget _buildChart(List<Map<String, dynamic>> data, Color color, TimeFilter filter) {
+    if (filter == TimeFilter.weekly || filter == TimeFilter.monthly) {
+      return _buildBarChart(data, color);
+    }
+    return _buildLineChart(data, color);
+  }
+
+  Widget _buildBarChart(List<Map<String, dynamic>> data, Color color) {
+    double maxY = 0;
+    for (var d in data) {
+      if (d['val'] > maxY) maxY = d['val'];
+    }
+    if (maxY == 0) maxY = 10;
+
+    return BarChart(
+      BarChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          horizontalInterval: (maxY / 4) > 0 ? (maxY / 4) : 1,
+          getDrawingHorizontalLine: (value) => FlLine(color: Colors.white.withValues(alpha: 0.05), strokeWidth: 1),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              getTitlesWidget: (value, meta) {
+                if (value.toInt() >= 0 && value.toInt() < data.length) {
+                  return Padding(
+                    padding: const EdgeInsets.only(top: 8.0),
+                    child: Text(data[value.toInt()]['label'], style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11)),
+                  );
+                }
+                return const Text('');
+              },
+            ),
+          ),
+          leftTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              interval: (maxY / 4) > 0 ? (maxY / 4) : 1,
+              getTitlesWidget: (value, meta) {
+                return Text(value.toInt().toString(), style: TextStyle(color: Colors.white.withValues(alpha: 0.5), fontSize: 11));
+              },
+              reservedSize: 36,
+            ),
+          ),
+        ),
+        borderData: FlBorderData(show: false),
+        maxY: maxY * 1.2,
+        barGroups: List.generate(data.length, (index) {
+          return BarChartGroupData(
+            x: index,
+            barRods: [
+              BarChartRodData(
+                toY: data[index]['val'],
+                color: color,
+                width: data.length > 7 ? 8 : 24, // Thinner bars if many, thicker if few
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
+              )
+            ],
+          );
+        }),
+      ),
+    );
+  }
+
+  Widget _buildLineChart(List<Map<String, dynamic>> data, Color color) {
     double maxY = 0;
     for (var d in data) {
       if (d['val'] > maxY) maxY = d['val'];
