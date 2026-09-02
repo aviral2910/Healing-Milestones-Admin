@@ -1,7 +1,10 @@
 class AppRoutes {
   static const login = '/login';
   static const splash = '/splash';
-  static const dashboard = '/';
+  static const dashboard = '/'; // Keep dashboard as the root (Action Hub)
+  static const actionHub = '/action-hub';
+  static const growth = '/growth';
+  static const engagement = '/engagement';
   static const users = '/users';
   static const String verification = '/verification';
   static const String moderation = '/moderation';

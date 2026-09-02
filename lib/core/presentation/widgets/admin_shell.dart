@@ -23,11 +23,10 @@ class AdminShell extends StatelessWidget {
           );
         },
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.dashboard_rounded), label: 'Dashboard'),
-          BottomNavigationBarItem(icon: Icon(Icons.people_rounded), label: 'Users'),
-          BottomNavigationBarItem(icon: Icon(Icons.gavel_rounded), label: 'Moderation'),
+          BottomNavigationBarItem(icon: Icon(Icons.flash_on_rounded), label: 'Action Hub'),
+          BottomNavigationBarItem(icon: Icon(Icons.trending_up_rounded), label: 'Growth'),
+          BottomNavigationBarItem(icon: Icon(Icons.bubble_chart_rounded), label: 'Engagement'),
           BottomNavigationBarItem(icon: Icon(Icons.chat_bubble_rounded), label: 'Support'),
-          BottomNavigationBarItem(icon: Icon(Icons.settings_rounded), label: 'Settings'),
         ],
       ),
     );

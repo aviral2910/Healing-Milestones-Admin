@@ -8,6 +8,9 @@ import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/not_authorized_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
 import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
+import '../../features/dashboard/presentation/screens/action_hub_screen.dart';
+import '../../features/dashboard/presentation/screens/platform_growth_screen.dart';
+import '../../features/dashboard/presentation/screens/engagement_screen.dart';
 import '../../features/users/presentation/screens/users_screen.dart';
 import '../../features/users/presentation/screens/user_detail_screen.dart';
 import '../../features/stories/presentation/screens/story_detail_screen.dart';
@@ -74,19 +77,67 @@ final routerProvider = Provider<GoRouter>((ref) {
           return AdminShell(navigationShell: navigationShell);
         },
         branches: [
-          // Branch 0: Dashboard
+          // Branch 0: Action Hub
           StatefulShellBranch(
             navigatorKey: _shellNavigatorDashboardKey,
             routes: [
               GoRoute(
-                path: AppRoutes.dashboard,
-                builder: (context, state) => const DashboardScreen(),
+                path: AppRoutes.dashboard, // default startup route
+                builder: (context, state) => const ActionHubScreen(),
               ),
               GoRoute(
                 path: AppRoutes.verification,
                 builder: (context, state) => const VerificationScreen(),
               ),
+              GoRoute(
+                path: AppRoutes.moderation,
+                builder: (context, state) => const ModerationScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.users,
+                builder: (context, state) => const UsersScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.settings,
+                builder: (context, state) => const SettingsScreen(),
+              ),
+              GoRoute(
+                path: AppRoutes.manageAdmins,
+                builder: (context, state) => const ManageAdminAccessScreen(),
+              ),
             ],
+          ),
+          // Branch 1: Platform Growth
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorUsersKey, // reusing the navigator keys
+            routes: [
+              GoRoute(
+                path: AppRoutes.growth,
+                builder: (context, state) => const PlatformGrowthScreen(),
+              ),
+            ],
+          ),
+          // Branch 2: Engagement
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorModerationKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.engagement,
+                builder: (context, state) => const EngagementScreen(),
+              ),
+            ],
+          ),
+          // Branch 3: Support Chats
+          StatefulShellBranch(
+            navigatorKey: _shellNavigatorSupportKey,
+            routes: [
+              GoRoute(
+                path: AppRoutes.supportChats,
+                builder: (context, state) => const SupportChatsListScreen(),
+              ),
+            ],
+          ),
+        ],
           ),
           // Branch 1: Users
           StatefulShellBranch(
