@@ -122,11 +122,21 @@ class _PendingProfilesTab extends ConsumerWidget {
           itemBuilder: (context, index) {
             final user = profiles[index];
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               decoration: BoxDecoration(
-                color: const Color(0xFF151518),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                color: const Color(0xFF141418), // Deep elegant card color
+                borderRadius: BorderRadius.circular(24),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.3),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  width: 1,
+                ),
               ),
               child: Material(
                 color: Colors.transparent,
@@ -134,73 +144,180 @@ class _PendingProfilesTab extends ConsumerWidget {
                   onTap: () {
                     context.push(AppRoutes.userDetail(user.userId, mode: 'verify'));
                   },
-                  borderRadius: BorderRadius.circular(16),
-                  highlightColor: Colors.white.withValues(alpha: 0.05),
-                  splashColor: Colors.white.withValues(alpha: 0.1),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Row(
-                      children: [
-                        // Minimal Avatar
-                        CircleAvatar(
-                          radius: 28,
-                          backgroundColor: Colors.white.withValues(alpha: 0.1),
-                          backgroundImage: user.profilePicture != null && user.profilePicture!.isNotEmpty
-                              ? NetworkImage(user.profilePicture!)
-                              : null,
-                          child: user.profilePicture == null || user.profilePicture!.isEmpty 
-                              ? const Icon(Icons.person, color: Colors.white70, size: 28) 
-                              : null,
-                        ),
-                        const SizedBox(width: 16),
-                        
-                        // Clean Text
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user.displayName,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
+                  borderRadius: BorderRadius.circular(24),
+                  highlightColor: theme.colorScheme.primary.withValues(alpha: 0.05),
+                  splashColor: theme.colorScheme.primary.withValues(alpha: 0.1),
+                  child: Column(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            // Big Premium Squircle Avatar
+                            Container(
+                              width: 75,
+                              height: 75,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(22),
+                                color: const Color(0xFF1E1E24),
+                                border: Border.all(color: theme.colorScheme.primary.withValues(alpha: 0.3), width: 1.5),
+                                image: user.profilePicture != null && user.profilePicture!.isNotEmpty
+                                    ? DecorationImage(
+                                        image: NetworkImage(user.profilePicture!),
+                                        fit: BoxFit.cover,
+                                      )
+                                    : null,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.15),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                user.username != null ? '@${user.username}' : user.email,
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 14,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        
-                        // Subtle Badge
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: theme.colorScheme.primary.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Text(
-                            'Review',
-                            style: TextStyle(
-                              color: theme.colorScheme.primary,
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
+                              child: user.profilePicture == null || user.profilePicture!.isEmpty
+                                  ? Icon(Icons.person_rounded, color: theme.colorScheme.primary.withValues(alpha: 0.8), size: 36)
+                                  : null,
                             ),
-                          ),
+                            const SizedBox(width: 20),
+                            
+                            // User Info
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.displayName,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: -0.3,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Row(
+                                    children: [
+                                      Icon(Icons.alternate_email_rounded, color: Colors.white.withValues(alpha: 0.4), size: 14),
+                                      const SizedBox(width: 4),
+                                      Expanded(
+                                        child: Text(
+                                          user.username != null ? user.username! : 'No username',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(alpha: 0.6),
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 6),
+                                  if (user.specialty != null && user.specialty!.isNotEmpty) 
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        user.specialty!,
+                                        style: TextStyle(
+                                          color: theme.colorScheme.primary,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )
+                                  else
+                                    Row(
+                                      children: [
+                                        Icon(Icons.mail_outline_rounded, color: Colors.white.withValues(alpha: 0.4), size: 14),
+                                        const SizedBox(width: 4),
+                                        Expanded(
+                                          child: Text(
+                                            user.email,
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(alpha: 0.5),
+                                              fontSize: 13,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                      
+                      // Divider
+                      Divider(color: Colors.white.withValues(alpha: 0.05), height: 1, thickness: 1),
+                      
+                      // Action Row (Application Ticket Style)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 14.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(Icons.assignment_ind_rounded, color: Colors.white.withValues(alpha: 0.3), size: 16),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Verification Request",
+                                  style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.4),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primary,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: theme.colorScheme.primary.withValues(alpha: 0.3),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'REVIEW',
+                                    style: TextStyle(
+                                      color: Colors.black,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                  SizedBox(width: 4),
+                                  Icon(Icons.arrow_forward_rounded, color: Colors.black, size: 14),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
