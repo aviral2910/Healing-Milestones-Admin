@@ -23,12 +23,12 @@ import '../../features/support_chats/presentation/screens/support_chat_detail_sc
 import '../presentation/widgets/admin_shell.dart';
 
 final GlobalKey<NavigatorState> _rootNavigatorKey = GlobalKey<NavigatorState>();
-final GlobalKey<NavigatorState> _shellNavigatorDashboardKey =
-    GlobalKey<NavigatorState>(debugLabel: 'dashboard');
-final GlobalKey<NavigatorState> _shellNavigatorUsersKey =
-    GlobalKey<NavigatorState>(debugLabel: 'users');
-final GlobalKey<NavigatorState> _shellNavigatorModerationKey =
-    GlobalKey<NavigatorState>(debugLabel: 'moderation');
+final GlobalKey<NavigatorState> _shellNavigatorActionHubKey =
+    GlobalKey<NavigatorState>(debugLabel: 'actionHub');
+final GlobalKey<NavigatorState> _shellNavigatorGrowthKey =
+    GlobalKey<NavigatorState>(debugLabel: 'growth');
+final GlobalKey<NavigatorState> _shellNavigatorEngagementKey =
+    GlobalKey<NavigatorState>(debugLabel: 'engagement');
 final GlobalKey<NavigatorState> _shellNavigatorSupportKey =
     GlobalKey<NavigatorState>(debugLabel: 'support');
 final GlobalKey<NavigatorState> _shellNavigatorSettingsKey =
@@ -84,7 +84,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         branches: [
           // Branch 0: Action Hub
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorDashboardKey,
+            navigatorKey: _shellNavigatorActionHubKey,
             routes: [
               GoRoute(
                 path: AppRoutes.dashboard, // default startup route
@@ -114,7 +114,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Branch 1: Platform Growth
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorUsersKey, 
+            navigatorKey: _shellNavigatorGrowthKey, 
             routes: [
               GoRoute(
                 path: AppRoutes.growth,
@@ -124,7 +124,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           // Branch 2: Engagement
           StatefulShellBranch(
-            navigatorKey: _shellNavigatorModerationKey,
+            navigatorKey: _shellNavigatorEngagementKey,
             routes: [
               GoRoute(
                 path: AppRoutes.engagement,
