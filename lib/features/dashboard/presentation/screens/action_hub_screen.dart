@@ -14,6 +14,12 @@ class ActionHubScreen extends ConsumerWidget {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.settings_rounded, color: Colors.white),
+            onPressed: () => context.push(AppRoutes.settings),
+          ),
+        ],
         title: const Text(
           'Action Hub',
           style: TextStyle(fontWeight: FontWeight.bold),
@@ -42,7 +48,7 @@ class ActionHubScreen extends ConsumerWidget {
                   const Color(0xFF1E1818),
                 ],
                 iconColor: const Color(0xFFFF7A7A),
-                onTap: () => context.go(AppRoutes.verification),
+                onTap: () => context.push(AppRoutes.verification),
                 badgeCount:
                     stats['pendingProfiles']! + stats['pendingStories']!,
               ),
@@ -58,7 +64,7 @@ class ActionHubScreen extends ConsumerWidget {
                   const Color(0xFF1E1C18),
                 ],
                 iconColor: const Color(0xFFFFD17A),
-                onTap: () => context.go(AppRoutes.moderation),
+                onTap: () => context.push(AppRoutes.moderation),
                 badgeCount: stats['activeReports'],
               ),
               const SizedBox(height: 16),
@@ -73,7 +79,7 @@ class ActionHubScreen extends ConsumerWidget {
                   const Color(0xFF18181E),
                 ],
                 iconColor: const Color(0xFF7A7AFF),
-                onTap: () => context.go(AppRoutes.users),
+                onTap: () => context.push(AppRoutes.users),
               ),
             ],
           );

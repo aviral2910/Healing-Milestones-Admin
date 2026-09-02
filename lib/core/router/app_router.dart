@@ -90,26 +90,7 @@ final routerProvider = Provider<GoRouter>((ref) {
                 path: AppRoutes.dashboard, // default startup route
                 builder: (context, state) => const ActionHubScreen(),
               ),
-              GoRoute(
-                path: AppRoutes.verification,
-                builder: (context, state) => const VerificationScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.moderation,
-                builder: (context, state) => const ModerationScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.users,
-                builder: (context, state) => const UsersScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.settings,
-                builder: (context, state) => const SettingsScreen(),
-              ),
-              GoRoute(
-                path: AppRoutes.manageAdmins,
-                builder: (context, state) => const ManageAdminAccessScreen(),
-              ),
+              // Moved verification, moderation, users, and settings outside to be full screen
             ],
           ),
           // Branch 1: Platform Growth
@@ -144,7 +125,32 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
         ],
       ),
-      // Detail screens outside the shell (so they cover the bottom nav)
+            // Detail screens outside the shell (so they cover the bottom nav)
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.verification,
+        builder: (context, state) => const VerificationScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.moderation,
+        builder: (context, state) => const ModerationScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.users,
+        builder: (context, state) => const UsersScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.settings,
+        builder: (context, state) => const SettingsScreen(),
+      ),
+      GoRoute(
+        parentNavigatorKey: _rootNavigatorKey,
+        path: AppRoutes.manageAdmins,
+        builder: (context, state) => const ManageAdminAccessScreen(),
+      ),
       GoRoute(
         parentNavigatorKey: _rootNavigatorKey,
         path: '/user/:id',
