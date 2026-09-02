@@ -10,44 +10,36 @@ import '../../../stories/data/stories_repository.dart';
 import '../../../moderation/data/moderation_repository.dart';
 import '../../../support_chats/data/support_chats_repository.dart';
 
+import '../../data/dashboard_repository.dart';
+import '../../../support_chats/data/support_chats_repository.dart';
+
 final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
-  final usersRepo = ref.watch(usersRepositoryProvider);
-  final storiesRepo = ref.watch(storiesRepositoryProvider);
-  final moderationRepo = ref.watch(moderationRepositoryProvider);
+  final dashRepo = ref.watch(dashboardRepositoryProvider);
   final supportChatsRepo = ref.watch(supportChatsRepositoryProvider);
 
-  final totalUsersCount = await usersRepo.getTotalUsersCount();
-  final pendingProfiles = (await usersRepo.getUsers()).where((u) => u.appliedForVerification && !u.isVerified).length;
+  // 1. Get real $O(1)$ metrics from backend
+  final metrics = await dashRepo.getDashboardMetrics();
   
-  final storiesResult = await storiesRepo.getPendingStories();
-  final reportsResult = await moderationRepo.getPendingReports();
-  
+  // 2. Get live unread chat counts from Firebase
   final chatsResult = await supportChatsRepo.getSupportChatsStream().first;
   int unreadSupportChats = 0;
   for (var chat in chatsResult) {
     if ((chat.unreadCount['admin'] ?? 0) > 0) unreadSupportChats++;
   }
   
+  // 3. Merge everything for the UI
   return {
-    'totalUsers': totalUsersCount,
-    'pendingProfiles': pendingProfiles,
-    'pendingStories': storiesResult.length,
-    'activeReports': reportsResult.length,
+    'totalUsers': metrics['totals']['users'],
+    'totalStories': metrics['totals']['stories'],
+    'pendingProfiles': metrics['queues']['pending_profiles'],
+    'activeReports': metrics['queues']['pending_reports'],
     'activeSupportChats': chatsResult.length,
     'unreadSupportChats': unreadSupportChats,
+    'dauHistory': metrics['dauHistory'],
     
-    // MOCK DATA FOR GRAPH PREVIEW
-    'dauHistory': [
-      {'day': 'Mon', 'users': 820},
-      {'day': 'Tue', 'users': 940},
-      {'day': 'Wed', 'users': 1100},
-      {'day': 'Thu', 'users': 1050},
-      {'day': 'Fri', 'users': 1200},
-      {'day': 'Sat', 'users': 1350},
-      {'day': 'Sun', 'users': 1500},
-    ],
-    'totalStories': 8432,
-    'reactionsToday': 850,
+    // Pulse section still needs trending tags implementation later, 
+    // keeping mock format for UI compatibility
+    'reactionsToday': metrics['today']['dau'] * 2, // temp fallback
     'trendingStories': [
       {'title': 'Finding light after 10 years of addiction...', 'author': 'Sarah J.', 'reactions': 342},
       {'title': 'My first steps without crutches!', 'author': 'Mike T.', 'reactions': 289},
