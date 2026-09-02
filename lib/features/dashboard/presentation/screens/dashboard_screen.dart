@@ -38,7 +38,7 @@ final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
     'activeReports': metrics['queues']['pending_reports'] ?? 0,
     'activeSupportChats': chatsResult.length,
     'unreadSupportChats': unreadSupportChats,
-    'dauHistory': metrics['dauHistory'],
+    'platformHistory': metrics['platformHistory'],
     
     // Pulse section still needs trending tags implementation later, 
     // keeping mock format for UI compatibility
