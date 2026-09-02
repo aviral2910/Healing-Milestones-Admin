@@ -17,16 +17,33 @@ final pendingStoriesProvider = FutureProvider((ref) {
   return ref.watch(storiesRepositoryProvider).getPendingStories();
 });
 
-class VerificationScreen extends ConsumerWidget {
+class VerificationScreen extends ConsumerStatefulWidget {
   const VerificationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<VerificationScreen> createState() => _VerificationScreenState();
+}
+
+class _VerificationScreenState extends ConsumerState<VerificationScreen> with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final theme = AppTheme.getThemeData(ThemePalette.goldenDark);
 
-    return DefaultTabController(
-      length: 2,
-      child: Scaffold(
+    return Scaffold(
         backgroundColor: theme.scaffoldBackgroundColor,
         appBar: AppBar(
           backgroundColor: theme.scaffoldBackgroundColor,
@@ -48,6 +65,7 @@ class VerificationScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(25),
               ),
               child: TabBar(
+                controller: _tabController,
                 indicator: BoxDecoration(
                   color: theme.colorScheme.primary.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(25),
@@ -67,12 +85,12 @@ class VerificationScreen extends ConsumerWidget {
             ),
           ),
         ),
-        body: const TabBarView(
-          children: [
-            _PendingProfilesTab(),
-            _PendingStoriesTab(),
-          ],
-        ),
+        body: TabBarView(
+        controller: _tabController,
+        children: const [
+          _PendingProfilesTab(),
+          _PendingStoriesTab(),
+        ],
       ),
     );
   }
