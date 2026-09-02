@@ -31,8 +31,9 @@ final dashboardStatsProvider = FutureProvider<Map<String, dynamic>>((ref) async 
   return {
     'totalUsers': metrics['totals']['users'],
     'totalStories': metrics['totals']['stories'],
-    'pendingProfiles': metrics['queues']['pending_profiles'],
-    'activeReports': metrics['queues']['pending_reports'],
+    'pendingProfiles': metrics['queues']['pending_profiles'] ?? 0,
+    'pendingStories': metrics['queues']['pending_stories'] ?? 0,
+    'activeReports': metrics['queues']['pending_reports'] ?? 0,
     'activeSupportChats': chatsResult.length,
     'unreadSupportChats': unreadSupportChats,
     'dauHistory': metrics['dauHistory'],
