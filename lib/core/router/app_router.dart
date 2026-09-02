@@ -7,7 +7,6 @@ import '../../features/auth/data/auth_providers.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/not_authorized_screen.dart';
 import '../../features/splash/presentation/screens/splash_screen.dart';
-import '../../features/dashboard/presentation/screens/dashboard_screen.dart';
 import '../../features/dashboard/presentation/screens/action_hub_screen.dart';
 import '../../features/dashboard/presentation/screens/platform_growth_screen.dart';
 import '../../features/dashboard/presentation/screens/engagement_screen.dart';

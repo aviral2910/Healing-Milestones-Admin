@@ -2,14 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:healing_milestones_admin/core/router/app_routes.dart';
-import 'dashboard_screen.dart';
+import '../../data/dashboard_providers.dart';
 
 class ActionHubScreen extends ConsumerWidget {
   const ActionHubScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final statsAsync = ref.watch(dashboardStatsProvider);
+    final statsAsync = ref.watch(actionHubStatsProvider);
     final theme = Theme.of(context);
 
     return Scaffold(

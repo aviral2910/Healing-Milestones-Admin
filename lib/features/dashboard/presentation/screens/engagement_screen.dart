@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
-import 'dashboard_screen.dart';
+import '../../data/dashboard_providers.dart';
 
 enum ChartPeriod { weekly, monthly, yearly }
 
@@ -16,7 +16,7 @@ class EngagementScreen extends ConsumerStatefulWidget {
 class _EngagementScreenState extends ConsumerState<EngagementScreen> {
   @override
   Widget build(BuildContext context) {
-    final statsAsync = ref.watch(dashboardStatsProvider);
+    final statsAsync = ref.watch(engagementStatsProvider);
     final theme = Theme.of(context);
 
     return Scaffold(
